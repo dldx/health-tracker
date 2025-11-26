@@ -516,13 +516,14 @@
 	<!-- Sticky Controls: Month Navigator + Ailment Filter -->
 	<div
 		class={cn(
-			'top-2 z-20 sticky bg-white/80 p-4 border border-jade-200 rounded-xl transition-shadow duration-200',
-			isScrolled ? 'shadow-lg' : 'shadow-none'
+			'bg-white/80 p-4 border border-jade-200 rounded-xl transition-all duration-200',
+			isEditMode ? 'relative z-0' : 'top-2 z-20 sticky',
+			isScrolled && !isEditMode ? 'shadow-lg' : 'shadow-none'
 		)}
 		style="backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);"
 	>
 		<!-- Month Navigator -->
-		<div class="flex justify-between items-center mb-3">
+		<div class="flex justify-between items-center" class:mb-3={!isEditMode}>
 			<button
 				type="button"
 				onclick={previousMonth}
@@ -544,8 +545,8 @@
 			</button>
 		</div>
 
-		<!-- Ailment Filter -->
-		{#if !healthStore.isLoading && ailmentCounts().length > 0}
+		<!-- Ailment Filter (hidden in edit mode) -->
+		{#if !healthStore.isLoading && ailmentCounts().length > 0 && !isEditMode}
 			<div class="pt-3 border-jade-200 border-t">
 				<div class="flex items-center gap-2 mb-2">
 					<Filter class="w-4 h-4 text-jade-500" />
@@ -652,16 +653,16 @@
 	{@const shouldShow = getTileShouldShow(tile.id)}
 	{#if shouldShow || isEditMode}
 		<div
-			{@attach sortable.ref}
-			class="relative transition-all duration-200 sortable-tile"
-			class:opacity-50={sortable.isDragging.current}
-			class:scale-[1.02]={sortable.isDropTarget.current}
-			class:ring-2={sortable.isDropTarget.current}
-			class:ring-jade-400={sortable.isDropTarget.current}
+		{@attach sortable.ref}
+		class="relative transition-all duration-200"
+		class:opacity-50={sortable.isDragging.current}
+		class:scale-[1.02]={sortable.isDropTarget.current}
+		class:ring-2={sortable.isDropTarget.current}
+		class:ring-jade-400={sortable.isDropTarget.current}
 		>
 			{#if isEditMode}
-				<!-- Drag handle on the left -->
-				<div class="top-1/2 left-2 z-10 absolute -translate-y-1/2">
+				<!-- Controls on the left -->
+				<div class="top-1/2 left-1 z-10 absolute flex flex-col gap-1 -translate-y-1/2">
 					<button
 						{@attach sortable.handleRef}
 						type="button"
@@ -670,10 +671,6 @@
 					>
 						<GripVertical class="w-4 h-4 text-jade-600" />
 					</button>
-				</div>
-
-				<!-- Visibility toggle on the right -->
-				<div class="top-1/2 right-2 z-10 absolute -translate-y-1/2">
 					<button
 						type="button"
 						onclick={() => toggleTileVisibility(tile.id)}
@@ -698,7 +695,6 @@
 			<div
 				class="transition-all duration-200"
 				class:pl-12={isEditMode}
-				class:pr-12={isEditMode}
 				class:opacity-40={isEditMode && (!tile.visible || !shouldShow)}
 				class:grayscale={isEditMode && (!tile.visible || !shouldShow)}
 			>
@@ -803,8 +799,3 @@
 	{/if}
 {/snippet}
 
-<style>
-	.sortable-tile {
-		touch-action: none;
-	}
-</style>

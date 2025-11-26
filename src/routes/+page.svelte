@@ -140,15 +140,15 @@
 	})}
 	<div
 		{@attach sortable.ref}
-		class="relative transition-all duration-200 sortable-tile"
+		class="relative transition-all duration-200"
 		class:opacity-50={sortable.isDragging.current}
 		class:scale-[1.02]={sortable.isDropTarget.current}
 		class:ring-2={sortable.isDropTarget.current}
 		class:ring-jade-400={sortable.isDropTarget.current}
 	>
 		{#if isEditMode}
-			<!-- Drag handle on the left -->
-			<div class="top-1/2 left-2 z-10 absolute -translate-y-1/2">
+			<!-- Controls on the left -->
+			<div class="top-1/2 left-1 z-10 absolute flex flex-col gap-1 -translate-y-1/2">
 				<button
 					{@attach sortable.handleRef}
 					type="button"
@@ -157,10 +157,6 @@
 				>
 					<GripVertical class="w-4 h-4 text-jade-600" />
 				</button>
-			</div>
-
-			<!-- Visibility toggle on the right -->
-			<div class="top-1/2 right-2 z-10 absolute -translate-y-1/2">
 				<button
 					type="button"
 					onclick={() => toggleTileVisibility(tile.id)}
@@ -185,7 +181,6 @@
 		<div
 			class="transition-all duration-200"
 			class:pl-12={isEditMode}
-			class:pr-12={isEditMode}
 			class:opacity-40={isEditMode && !tile.visible}
 			class:grayscale={isEditMode && !tile.visible}
 		>
@@ -210,10 +205,18 @@
 					onSelect={handleAilmentSelect}
 				/>
 			{:else if tile.id === 'entries'}
-				<TodayEntriesSection
-					{entries}
-					onDelete={handleDeleteEntry}
-				/>
+				{#if isEditMode}
+					<!-- Collapsed view in edit mode -->
+					<div class="p-4 text-center card">
+						<div class="font-medium text-charcoal-500">{i18n.t.tiles.names.entries}</div>
+						<div class="text-charcoal-400 text-sm">{entries.length} {entries.length === 1 ? 'entry' : 'entries'}</div>
+					</div>
+				{:else}
+					<TodayEntriesSection
+						{entries}
+						onDelete={handleDeleteEntry}
+					/>
+				{/if}
 			{/if}
 		</div>
 	</div>
@@ -332,8 +335,3 @@
 	/>
 {/if}
 
-<style>
-	.sortable-tile {
-		touch-action: none;
-	}
-</style>
