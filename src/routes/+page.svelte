@@ -54,8 +54,8 @@
 	const pageTitle = $derived.by(() => {
 		if (healthStore.customName) {
 			return i18n.locale === 'en'
-				? `${healthStore.customName}'s Tracker`
-				: `${healthStore.customName} 嘅追蹤`;
+				? `${healthStore.customName}'s Health Tracker`
+				: `${healthStore.customName} 嘅健康追蹤`;
 		}
 		return i18n.t.dayView.title;
 	});
@@ -63,8 +63,8 @@
 	const pageSubtitle = $derived.by(() => {
 		if (healthStore.customName) {
 			return i18n.locale === 'en'
-				? 'Health Tracker'
-				: '健康追蹤';
+				? 'Track your health'
+				: '追蹤你嘅健康';
 		}
 		return i18n.t.dayView.subtitle;
 	});
