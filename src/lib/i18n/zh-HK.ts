@@ -282,6 +282,57 @@ export const zhHK: Translations = {
 			days: '日',
 			cyclesTracked: '個週期已記錄'
 		}
+	},
+
+	onboarding: {
+		welcome: {
+			title: '歡迎',
+			subtitle: 'Welcome',
+			heading: '你嘅私人健康夥伴',
+			description: '追蹤你嘅健康旅程，獲得專屬嘅洞察分析'
+		},
+		features: {
+			title: '功能介紹',
+			subtitle: 'Features',
+			track: {
+				title: '記錄不適',
+				description: '記低症狀、嚴重程度同時間'
+			},
+			triggers: {
+				title: '搵出誘因',
+				description: '發現你健康嘅規律'
+			},
+			insights: {
+				title: '健康洞察',
+				description: '睇清趨勢同關聯'
+			},
+			period: {
+				title: '經期追蹤',
+				description: '監察你嘅週期同症狀'
+			},
+			customize: '撳標題嘅設定圖示可以重新排序同隱藏磁貼'
+		},
+		privacy: {
+			title: '你嘅資料由你掌控',
+			subtitle: 'Privacy',
+			heading: '私隱優先',
+			description: '所有健康資料只儲存喺你部機。唔使登入、唔上雲端、唔會追蹤你。',
+			localOnly: '本地儲存',
+			noAccount: '唔使註冊',
+			exportAnytime: '隨時匯出'
+		},
+		personalize: {
+			title: '自訂你嘅體驗',
+			subtitle: 'Personalize',
+			heading: '你叫咩名？',
+			description: '個人化你嘅體驗（可跳過）',
+			placeholder: '輸入你嘅名',
+			skip: '遲啲先算'
+		},
+		getStarted: '開始啦！',
+		next: '下一步',
+		back: '返去',
+		skip: '跳過'
 	}
 };
 

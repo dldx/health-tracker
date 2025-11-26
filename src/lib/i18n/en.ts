@@ -279,6 +279,57 @@ export const en = {
 			days: 'days',
 			cyclesTracked: 'cycles tracked'
 		}
+	},
+
+	onboarding: {
+		welcome: {
+			title: 'Welcome',
+			subtitle: '歡迎',
+			heading: 'Your Personal Health Companion',
+			description: 'Track your wellness journey with insights tailored just for you'
+		},
+		features: {
+			title: 'What You Can Do',
+			subtitle: '功能介紹',
+			track: {
+				title: 'Track Ailments',
+				description: 'Log symptoms with severity and time'
+			},
+			triggers: {
+				title: 'Find Triggers',
+				description: 'Discover patterns in your health'
+			},
+			insights: {
+				title: 'Get Insights',
+				description: 'Visualize trends and correlations'
+			},
+			period: {
+				title: 'Period Tracking',
+				description: 'Monitor your cycle and symptoms'
+			},
+			customize: 'Tap the settings icon in the header to reorder and hide tiles'
+		},
+		privacy: {
+			title: 'Your Data, Your Control',
+			subtitle: '私隱保護',
+			heading: 'Privacy First',
+			description: 'All your health data stays on your device. No accounts, no cloud, no tracking.',
+			localOnly: 'Stored locally',
+			noAccount: 'No account needed',
+			exportAnytime: 'Export anytime'
+		},
+		personalize: {
+			title: 'Make It Yours',
+			subtitle: '個人化',
+			heading: "What's your name?",
+			description: 'Personalize your experience (optional)',
+			placeholder: 'Enter your name',
+			skip: 'Skip for now'
+		},
+		getStarted: "Let's Go!",
+		next: 'Next',
+		back: 'Back',
+		skip: 'Skip'
 	}
 };
 

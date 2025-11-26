@@ -42,6 +42,7 @@ class HealthStore {
 	customName = $state<string | undefined>(undefined);
 	tileConfig = $state<TileConfig[]>([...DEFAULT_TILE_ORDER]);
 	statsTileConfig = $state<StatsTileConfig[]>([...DEFAULT_STATS_TILE_ORDER]);
+	hasCompletedOnboarding = $state<boolean>(false);
 
 	// UI state
 	selectedDate = $state<string>(getTodayISO());
@@ -194,6 +195,7 @@ class HealthStore {
 		this.customName = settings?.customName;
 		this.tileConfig = settings?.tileConfig ?? [...DEFAULT_TILE_ORDER];
 		this.statsTileConfig = settings?.statsTileConfig ?? [...DEFAULT_STATS_TILE_ORDER];
+		this.hasCompletedOnboarding = settings?.hasCompletedOnboarding ?? false;
 	}
 
 	/**
@@ -249,6 +251,31 @@ class HealthStore {
 	}
 
 	/**
+	 * Complete onboarding flow
+	 * 完成引導流程
+	 */
+	async completeOnboarding(): Promise<void> {
+		this.hasCompletedOnboarding = true;
+
+		const now = new Date();
+		const settings = await db.settings.get('settings');
+
+		if (settings) {
+			await db.settings.update('settings', { hasCompletedOnboarding: true, updatedAt: now });
+		} else {
+			const newSettings: AppSettings = {
+				id: 'settings',
+				language: 'en',
+				theme: 'light',
+				hasCompletedOnboarding: true,
+				createdAt: now,
+				updatedAt: now
+			};
+			await db.settings.put(newSettings);
+		}
+	}
+
+	/**
 	 * Update tile configuration (order and visibility)
 	 * 更新磁貼配置（順序同可見性）
 	 */
@@ -268,6 +295,7 @@ class HealthStore {
 			customName: settings?.customName,
 			tileConfig: plainConfig,
 			statsTileConfig: settings?.statsTileConfig ?? [...DEFAULT_STATS_TILE_ORDER],
+			hasCompletedOnboarding: settings?.hasCompletedOnboarding ?? false,
 			createdAt: settings?.createdAt ?? now,
 			updatedAt: now
 		});
@@ -324,6 +352,7 @@ class HealthStore {
 			customName: settings?.customName,
 			tileConfig: settings?.tileConfig ?? [...DEFAULT_TILE_ORDER],
 			statsTileConfig: plainConfig,
+			hasCompletedOnboarding: settings?.hasCompletedOnboarding ?? false,
 			createdAt: settings?.createdAt ?? now,
 			updatedAt: now
 		});

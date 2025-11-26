@@ -177,6 +177,7 @@ export interface AppSettings {
 	customName?: string; // Easter egg: personalize the app title (e.g., "Eliza's Health Tracker")
 	tileConfig?: TileConfig[]; // Home page tile order and visibility settings
 	statsTileConfig?: StatsTileConfig[]; // Stats page tile order and visibility settings
+	hasCompletedOnboarding?: boolean; // Whether user has completed the onboarding flow
 	createdAt: Date;
 	updatedAt: Date;
 }

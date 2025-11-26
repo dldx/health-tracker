@@ -259,13 +259,7 @@
 		</div>
 	{/if}
 
-	{#if healthStore.isLoading}
-		<!-- Loading State -->
-		<div class="flex justify-center items-center py-12">
-			<div class="text-charcoal-400">{i18n.t.common.loading}</div>
-		</div>
-	{:else}
-		<DragDropProvider
+	<DragDropProvider
 			sensors={[KeyboardSensor, PointerSensor]}
 			onDragOver={handleDragOver}
 			onDragEnd={handleDragEnd}
@@ -311,8 +305,7 @@
 				{/if}
 			{/snippet}
 		</DragOverlay>
-		</DragDropProvider>
-	{/if}
+	</DragDropProvider>
 </main>
 
 <!-- Log Ailment Sheet -->

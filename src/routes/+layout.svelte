@@ -5,6 +5,7 @@
 	import { i18n } from '$lib/i18n';
 	import Navigation from '$lib/components/Navigation.svelte';
 	import InstallPrompt from '$lib/components/InstallPrompt.svelte';
+	import Onboarding from '$lib/components/Onboarding.svelte';
 	import { Toaster } from 'svelte-sonner';
 	import { registerServiceWorker, requestPersistentStorage } from '$lib/utils/pwa';
 
@@ -57,9 +58,13 @@
 	}}
 />
 
-<div class="safe-top pb-20 min-h-screen">
-	{@render children()}
-</div>
+{#if healthStore.isInitialized && !healthStore.hasCompletedOnboarding}
+	<Onboarding />
+{:else if healthStore.isInitialized}
+	<div class="safe-top pb-20 min-h-screen">
+		{@render children()}
+	</div>
 
-<Navigation />
-<InstallPrompt />
+	<Navigation />
+	<InstallPrompt />
+{/if}
