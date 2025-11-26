@@ -4,9 +4,9 @@
 	import DayPicker from '$lib/components/DayPicker.svelte';
 	import MoodSelector from '$lib/components/MoodSelector.svelte';
 	import AilmentSelector from '$lib/components/AilmentSelector.svelte';
-	import HealthEntryCard from '$lib/components/HealthEntryCard.svelte';
 	import LogAilmentSheet from '$lib/components/LogAilmentSheet.svelte';
 	import PeriodLogger from '$lib/components/PeriodLogger.svelte';
+	import { PeriodTrackerButton, TodayEntriesSection } from '$lib/components/today';
 	import type { AilmentType, MoodLevel } from '$lib/types';
 
 	// Sheet state
@@ -51,20 +51,20 @@
 	const currentPeriod = $derived(healthStore.selectedDatePeriod);
 </script>
 
-<main class="max-w-md mx-auto px-4 py-6 space-y-4">
+<main class="space-y-4 mx-auto px-4 py-6 max-w-md">
 	<!-- Header -->
-	<header class="text-center mb-6">
-		<h1 class="text-2xl font-bold text-jade-600 neon-glow">
+	<header class="mb-6 text-center">
+		<h1 class="font-bold text-jade-600 text-2xl neon-glow">
 			{i18n.t.dayView.title}
 		</h1>
-		<p class="text-sm text-charcoal-400">
+		<p class="text-charcoal-400 text-sm">
 			{i18n.t.dayView.subtitle}
 		</p>
 	</header>
 
 	{#if healthStore.isLoading}
 		<!-- Loading State -->
-		<div class="flex items-center justify-center py-12">
+		<div class="flex justify-center items-center py-12">
 			<div class="text-charcoal-400">{i18n.t.common.loading}</div>
 		</div>
 	{:else}
@@ -81,31 +81,10 @@
 		/>
 
 		<!-- Period Tracker Button -->
-		<button
-			type="button"
-			onclick={() => showPeriodSheet = true}
-			class="card p-4 w-full flex items-center justify-between hover:border-pink-300 transition-all"
-			class:border-pink-400={currentPeriod}
-			class:bg-pink-50={currentPeriod}
-		>
-			<div class="flex items-center gap-3">
-				<span class="text-2xl">🩸</span>
-				<div class="text-left">
-					<span class="font-medium text-charcoal-600">{i18n.t.period.logPeriod}</span>
-					{#if currentPeriod}
-						<p class="text-xs text-pink-600">
-							{i18n.t.period.flow[currentPeriod.flow]}
-							{#if currentPeriod.symptoms.length > 0}
-								• {currentPeriod.symptoms.length} {i18n.t.period.symptoms.toLowerCase()}
-							{/if}
-						</p>
-					{:else}
-						<p class="text-xs text-charcoal-400">{i18n.t.period.subtitle}</p>
-					{/if}
-				</div>
-			</div>
-			<span class="text-charcoal-400">›</span>
-		</button>
+		<PeriodTrackerButton
+			currentPeriod={currentPeriod}
+			onClick={() => showPeriodSheet = true}
+		/>
 
 		<!-- Ailment Selector -->
 		<AilmentSelector
@@ -114,29 +93,10 @@
 		/>
 
 		<!-- Today's Entries -->
-		<section>
-			<div class="divider-gold my-4">
-				{i18n.t.dayView.todayEntries}
-			</div>
-
-			{#if entries.length === 0}
-				<div class="card p-8 text-center">
-					<p class="text-charcoal-400">{i18n.t.dayView.noEntries}</p>
-					<p class="text-sm text-charcoal-300 mt-1">{i18n.t.dayView.noEntriesHint}</p>
-				</div>
-			{:else}
-				<div class="space-y-3">
-					{#each entries as entry, index}
-						<div class="stagger-{Math.min(index + 1, 5)}">
-							<HealthEntryCard
-								{entry}
-								onDelete={handleDeleteEntry}
-							/>
-						</div>
-					{/each}
-				</div>
-			{/if}
-		</section>
+		<TodayEntriesSection
+			{entries}
+			onDelete={handleDeleteEntry}
+		/>
 	{/if}
 </main>
 

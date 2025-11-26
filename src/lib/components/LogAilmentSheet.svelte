@@ -24,6 +24,27 @@
 	let notes = $state('');
 	let isSaving = $state(false);
 
+	// Calculate trigger frequency for this specific ailment
+	const sortedTriggers = $derived(() => {
+		// Count how many times each trigger appears with this ailment
+		const triggerCounts = new Map<string, number>();
+
+		for (const entry of healthStore.entries) {
+			if (entry.ailmentTypeId === ailment.id) {
+				for (const triggerId of entry.triggerIds) {
+					triggerCounts.set(triggerId, (triggerCounts.get(triggerId) || 0) + 1);
+				}
+			}
+		}
+
+		// Sort active triggers by frequency (descending)
+		return [...healthStore.activeTriggerTypes].sort((a, b) => {
+			const countA = triggerCounts.get(a.id) || 0;
+			const countB = triggerCounts.get(b.id) || 0;
+			return countB - countA;
+		});
+	});
+
 	function toggleTrigger(id: string) {
 		if (selectedTriggerIds.includes(id)) {
 			selectedTriggerIds = selectedTriggerIds.filter(t => t !== id);
@@ -117,7 +138,7 @@
 
 			<!-- Triggers -->
 			<TriggerSelector
-				triggers={healthStore.activeTriggerTypes}
+				triggers={sortedTriggers()}
 				selectedIds={selectedTriggerIds}
 				onToggle={toggleTrigger}
 			/>

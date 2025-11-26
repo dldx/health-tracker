@@ -19,6 +19,7 @@ import type {
 	CycleStats
 } from '$lib/types';
 import { getTodayISO, addDays } from '$lib/utils/date';
+import { generateUUID } from '$lib/utils/uuid';
 
 /**
  * Health Store using Svelte 5 runes
@@ -179,7 +180,7 @@ class HealthStore {
 		const now = new Date();
 		// Create a plain object (not a reactive proxy) for IndexedDB
 		const newEntry: HealthEntry = {
-			id: crypto.randomUUID(),
+			id: generateUUID(),
 			date: entry.date,
 			time: entry.time,
 			ailmentTypeId: entry.ailmentTypeId,
@@ -233,7 +234,7 @@ class HealthStore {
 		} else {
 			// Create a plain object for IndexedDB
 			const newCheckIn: DailyCheckIn = {
-				id: crypto.randomUUID(),
+				id: generateUUID(),
 				date: date,
 				mood: mood,
 				notes: notes,
@@ -290,7 +291,7 @@ class HealthStore {
 		const now = new Date();
 		const newAilment: AilmentType = {
 			...ailment,
-			id: crypto.randomUUID(),
+			id: generateUUID(),
 			isDefault: false,
 			createdAt: now,
 			updatedAt: now
@@ -311,7 +312,7 @@ class HealthStore {
 		const now = new Date();
 		const newTrigger: TriggerType = {
 			...trigger,
-			id: crypto.randomUUID(),
+			id: generateUUID(),
 			isDefault: false,
 			createdAt: now,
 			updatedAt: now
@@ -339,6 +340,36 @@ class HealthStore {
 	}
 
 	/**
+	 * Update a custom ailment type
+	 * 更新自訂不適類型
+	 */
+	async updateAilmentType(
+		id: string,
+		updates: Partial<Pick<AilmentType, 'name' | 'nameZh' | 'icon'>>
+	): Promise<void> {
+		const ailment = this.ailmentTypes.find((a) => a.id === id);
+		if (!ailment || ailment.isDefault) return;
+
+		const updatedAt = new Date();
+		await db.ailmentTypes.update(id, { ...updates, updatedAt });
+		this.ailmentTypes = this.ailmentTypes.map((a) =>
+			a.id === id ? { ...a, ...updates, updatedAt } : a
+		);
+	}
+
+	/**
+	 * Delete a custom ailment type
+	 * 刪除自訂不適類型
+	 */
+	async deleteAilmentType(id: string): Promise<void> {
+		const ailment = this.ailmentTypes.find((a) => a.id === id);
+		if (!ailment || ailment.isDefault) return;
+
+		await db.ailmentTypes.delete(id);
+		this.ailmentTypes = this.ailmentTypes.filter((a) => a.id !== id);
+	}
+
+	/**
 	 * Toggle trigger type active status
 	 * 切換誘因類型啟用狀態
 	 */
@@ -355,6 +386,36 @@ class HealthStore {
 	}
 
 	/**
+	 * Update a custom trigger type
+	 * 更新自訂誘因類型
+	 */
+	async updateTriggerType(
+		id: string,
+		updates: Partial<Pick<TriggerType, 'name' | 'nameZh' | 'icon' | 'category'>>
+	): Promise<void> {
+		const trigger = this.triggerTypes.find((t) => t.id === id);
+		if (!trigger || trigger.isDefault) return;
+
+		const updatedAt = new Date();
+		await db.triggerTypes.update(id, { ...updates, updatedAt });
+		this.triggerTypes = this.triggerTypes.map((t) =>
+			t.id === id ? { ...t, ...updates, updatedAt } : t
+		);
+	}
+
+	/**
+	 * Delete a custom trigger type
+	 * 刪除自訂誘因類型
+	 */
+	async deleteTriggerType(id: string): Promise<void> {
+		const trigger = this.triggerTypes.find((t) => t.id === id);
+		if (!trigger || trigger.isDefault) return;
+
+		await db.triggerTypes.delete(id);
+		this.triggerTypes = this.triggerTypes.filter((t) => t.id !== id);
+	}
+
+	/**
 	 * Add custom period symptom
 	 * 新增自訂經期症狀
 	 */
@@ -364,7 +425,7 @@ class HealthStore {
 		const now = new Date();
 		const newSymptom: CustomPeriodSymptom = {
 			...symptom,
-			id: crypto.randomUUID(),
+			id: generateUUID(),
 			createdAt: now,
 			updatedAt: now
 		};
@@ -388,6 +449,33 @@ class HealthStore {
 		this.customSymptoms = this.customSymptoms.map((s) =>
 			s.id === id ? { ...s, isActive, updatedAt } : s
 		);
+	}
+
+	/**
+	 * Update a custom symptom
+	 * 更新自訂症狀
+	 */
+	async updateCustomSymptom(
+		id: string,
+		updates: Partial<Pick<CustomPeriodSymptom, 'name' | 'nameZh' | 'icon'>>
+	): Promise<void> {
+		const symptom = this.customSymptoms.find((s) => s.id === id);
+		if (!symptom) return;
+
+		const updatedAt = new Date();
+		await db.customSymptoms.update(id, { ...updates, updatedAt });
+		this.customSymptoms = this.customSymptoms.map((s) =>
+			s.id === id ? { ...s, ...updates, updatedAt } : s
+		);
+	}
+
+	/**
+	 * Delete a custom symptom
+	 * 刪除自訂症狀
+	 */
+	async deleteCustomSymptom(id: string): Promise<void> {
+		await db.customSymptoms.delete(id);
+		this.customSymptoms = this.customSymptoms.filter((s) => s.id !== id);
 	}
 
 	// ═══════════════════════════════════════════════════════════
@@ -427,7 +515,7 @@ class HealthStore {
 		} else {
 			// Create new entry (plain object for IndexedDB)
 			const newEntry: PeriodEntry = {
-				id: crypto.randomUUID(),
+				id: generateUUID(),
 				date: date,
 				flow: flow,
 				symptoms: [...symptoms],

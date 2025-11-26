@@ -1,26 +1,81 @@
 <script lang="ts">
-	import {
-		ChevronRight,
-		Download,
-		Upload,
-		Trash2,
-		Globe,
-		Heart,
-		Zap,
-		Shield,
-		Droplets
-	} from 'lucide-svelte';
-	import Icon from '@iconify/svelte';
+	import { Heart, Zap, Droplets } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 	import { i18n } from '$lib/i18n';
 	import { healthStore } from '$lib/stores/health.svelte';
 	import { db, resetDatabase } from '$lib/db/database';
-	import { cn } from '$lib/utils/cn';
-	import type { Language, ExportData } from '$lib/types';
+	import {
+		LanguageSelector,
+		ToggleListSection,
+		DataManagement,
+		EditItemModal,
+		DeleteConfirmModal,
+		ClearDataModal
+	} from '$lib/components/settings';
+	import type { Language, ExportData, AilmentType, TriggerType, CustomPeriodSymptom, TriggerCategory } from '$lib/types';
 
 	let showClearConfirm = $state(false);
 	let isExporting = $state(false);
 	let isImporting = $state(false);
+
+	// Edit/Delete state
+	type EditItemType = 'ailment' | 'trigger' | 'symptom';
+	let editingItem = $state<{ type: EditItemType; item: AilmentType | TriggerType | CustomPeriodSymptom } | null>(null);
+	let deleteItem = $state<{ type: EditItemType; item: AilmentType | TriggerType | CustomPeriodSymptom } | null>(null);
+
+	function openEditModal(type: EditItemType, item: AilmentType | TriggerType | CustomPeriodSymptom) {
+		editingItem = { type, item };
+	}
+
+	function closeEditModal() {
+		editingItem = null;
+	}
+
+	async function handleSaveEdit(name: string, nameZh: string, icon: string, category?: TriggerCategory) {
+		if (!editingItem) return;
+
+		try {
+			const updates = {
+				name: name.trim(),
+				nameZh: nameZh.trim(),
+				icon: icon.trim()
+			};
+
+			if (editingItem.type === 'ailment') {
+				await healthStore.updateAilmentType(editingItem.item.id, updates);
+			} else if (editingItem.type === 'trigger') {
+				await healthStore.updateTriggerType(editingItem.item.id, { ...updates, category: category || 'other' });
+			} else if (editingItem.type === 'symptom') {
+				await healthStore.updateCustomSymptom(editingItem.item.id, updates);
+			}
+
+			toast.success(i18n.t.settings.updated);
+			closeEditModal();
+		} catch (error) {
+			console.error('Update failed:', error);
+			toast.error(i18n.t.errors.saveFailed);
+		}
+	}
+
+	async function handleDelete() {
+		if (!deleteItem) return;
+
+		try {
+			if (deleteItem.type === 'ailment') {
+				await healthStore.deleteAilmentType(deleteItem.item.id);
+			} else if (deleteItem.type === 'trigger') {
+				await healthStore.deleteTriggerType(deleteItem.item.id);
+			} else if (deleteItem.type === 'symptom') {
+				await healthStore.deleteCustomSymptom(deleteItem.item.id);
+			}
+
+			toast.success(i18n.t.settings.deleted);
+			deleteItem = null;
+		} catch (error) {
+			console.error('Delete failed:', error);
+			toast.error(i18n.t.errors.deleteFailed);
+		}
+	}
 
 	async function handleExport() {
 		isExporting = true;
@@ -76,14 +131,12 @@
 							if (data.triggerTypes) await db.triggerTypes.bulkPut(data.triggerTypes);
 							if (data.healthEntries) await db.healthEntries.bulkPut(data.healthEntries);
 
-							// dailyCheckIns has unique constraint on date - delete existing records with same dates first
 							if (data.dailyCheckIns && data.dailyCheckIns.length > 0) {
 								const datesToImport = data.dailyCheckIns.map(c => c.date);
 								await db.dailyCheckIns.where('date').anyOf(datesToImport).delete();
 								await db.dailyCheckIns.bulkPut(data.dailyCheckIns);
 							}
 
-							// periodEntries - delete existing records with same dates to avoid conflicts
 							if (data.periodEntries && data.periodEntries.length > 0) {
 								const periodDatesToImport = data.periodEntries.map(p => p.date);
 								await db.periodEntries.where('date').anyOf(periodDatesToImport).delete();
@@ -126,7 +179,7 @@
 	}
 </script>
 
-<main class="max-w-md mx-auto px-4 py-6 space-y-6">
+<main class="max-w-md mx-auto px-4 py-6 space-y-6 pb-24">
 	<!-- Header -->
 	<header class="text-center">
 		<h1 class="text-2xl font-bold text-jade-600 neon-glow">
@@ -138,229 +191,57 @@
 	</header>
 
 	<!-- Language -->
-	<section class="card overflow-hidden">
-		<div class="p-4 border-b border-charcoal-100">
-			<div class="flex items-center gap-3">
-				<Globe class="w-5 h-5 text-jade-500" />
-				<span class="font-medium text-charcoal-600">{i18n.t.settings.language}</span>
-			</div>
-		</div>
-		<div class="divide-y divide-charcoal-100">
-			<button
-				type="button"
-				onclick={() => setLanguage('en')}
-				class={cn(
-					'w-full p-4 text-left flex items-center justify-between hover:bg-cream-50 transition-colors',
-					i18n.locale === 'en' && 'bg-jade-50'
-				)}
-			>
-				<span>🇬🇧 English</span>
-				{#if i18n.locale === 'en'}
-					<span class="text-jade-500">✓</span>
-				{/if}
-			</button>
-			<button
-				type="button"
-				onclick={() => setLanguage('zh-HK')}
-				class={cn(
-					'w-full p-4 text-left flex items-center justify-between hover:bg-cream-50 transition-colors',
-					i18n.locale === 'zh-HK' && 'bg-jade-50'
-				)}
-			>
-				<span>🇭🇰 繁體中文（廣東話）</span>
-				{#if i18n.locale === 'zh-HK'}
-					<span class="text-jade-500">✓</span>
-				{/if}
-			</button>
-		</div>
-	</section>
+	<LanguageSelector onSelectLanguage={setLanguage} />
 
 	<!-- Ailment Types -->
-	<section class="card overflow-hidden">
-		<div class="p-4 border-b border-charcoal-100">
-			<div class="flex items-center gap-3">
-				<Heart class="w-5 h-5 text-coral-500" />
-				<div>
-					<span class="font-medium text-charcoal-600">{i18n.t.settings.ailmentTypes}</span>
-					<p class="text-xs text-charcoal-400">{i18n.t.settings.manageAilments}</p>
-				</div>
-			</div>
-		</div>
-		<div class="divide-y divide-charcoal-100">
-			{#each healthStore.ailmentTypes as ailment}
-				<button
-					type="button"
-					onclick={() => healthStore.toggleAilmentActive(ailment.id)}
-					class="w-full p-4 flex items-center justify-between hover:bg-cream-50 transition-colors"
-				>
-					<div class="flex items-center gap-3">
-						<span class="text-xl">
-							{#if ailment.icon.includes(':')}
-								<Icon icon={ailment.icon} />
-							{:else}
-								{ailment.icon}
-							{/if}
-						</span>
-						<span class={cn(
-							'text-sm',
-							ailment.isActive ? 'text-charcoal-600' : 'text-charcoal-400 line-through'
-						)}>
-							{i18n.localizedName(ailment)}
-						</span>
-					</div>
-					<div class={cn(
-						'w-10 h-6 rounded-full transition-colors relative',
-						ailment.isActive ? 'bg-jade-400' : 'bg-charcoal-200'
-					)}>
-						<div class={cn(
-							'absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform',
-							ailment.isActive ? 'translate-x-5' : 'translate-x-1'
-						)}></div>
-					</div>
-				</button>
-			{/each}
-		</div>
-	</section>
+	<ToggleListSection
+		title={i18n.t.settings.ailmentTypes}
+		subtitle={i18n.t.settings.manageAilments}
+		icon={Heart}
+		iconColor="text-coral-500"
+		items={healthStore.ailmentTypes}
+		onToggle={healthStore.toggleAilmentActive.bind(healthStore)}
+		onEdit={(item) => openEditModal('ailment', item)}
+		onDelete={(item) => deleteItem = { type: 'ailment', item }}
+	/>
 
 	<!-- Trigger Types -->
-	<section class="card overflow-hidden">
-		<div class="p-4 border-b border-charcoal-100">
-			<div class="flex items-center gap-3">
-				<Zap class="w-5 h-5 text-gold-500" />
-				<div>
-					<span class="font-medium text-charcoal-600">{i18n.t.settings.triggerTypes}</span>
-					<p class="text-xs text-charcoal-400">{i18n.t.settings.manageTriggers}</p>
-				</div>
-			</div>
-		</div>
-		<div class="divide-y divide-charcoal-100 max-h-64 overflow-y-auto">
-			{#each healthStore.triggerTypes as trigger}
-				<button
-					type="button"
-					onclick={() => healthStore.toggleTriggerActive(trigger.id)}
-					class="w-full p-4 flex items-center justify-between hover:bg-cream-50 transition-colors"
-				>
-					<div class="flex items-center gap-3">
-						<span class="text-xl">
-							{#if trigger.icon.includes(':')}
-								<Icon icon={trigger.icon} />
-							{:else}
-								{trigger.icon}
-							{/if}
-						</span>
-						<span class={cn(
-							'text-sm',
-							trigger.isActive ? 'text-charcoal-600' : 'text-charcoal-400 line-through'
-						)}>
-							{i18n.localizedName(trigger)}
-						</span>
-					</div>
-					<div class={cn(
-						'w-10 h-6 rounded-full transition-colors relative',
-						trigger.isActive ? 'bg-jade-400' : 'bg-charcoal-200'
-					)}>
-						<div class={cn(
-							'absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform',
-							trigger.isActive ? 'translate-x-5' : 'translate-x-1'
-						)}></div>
-					</div>
-				</button>
-			{/each}
-		</div>
-	</section>
+	<ToggleListSection
+		title={i18n.t.settings.triggerTypes}
+		subtitle={i18n.t.settings.manageTriggers}
+		icon={Zap}
+		iconColor="text-gold-500"
+		items={healthStore.triggerTypes}
+		maxHeight="md"
+		onToggle={healthStore.toggleTriggerActive.bind(healthStore)}
+		onEdit={(item) => openEditModal('trigger', item)}
+		onDelete={(item) => deleteItem = { type: 'trigger', item }}
+	/>
 
 	<!-- Custom Period Symptoms -->
 	{#if healthStore.customSymptoms.length > 0}
-		<section class="card overflow-hidden">
-			<div class="p-4 border-b border-charcoal-100">
-				<div class="flex items-center gap-3">
-					<Droplets class="w-5 h-5 text-pink-500" />
-					<div>
-						<span class="font-medium text-charcoal-600">{i18n.t.period.symptoms}</span>
-						<p class="text-xs text-charcoal-400">{i18n.t.settings.manageAilments}</p>
-					</div>
-				</div>
-			</div>
-			<div class="divide-y divide-charcoal-100 max-h-48 overflow-y-auto">
-				{#each healthStore.customSymptoms as symptom}
-					<button
-						type="button"
-						onclick={() => healthStore.toggleCustomSymptomActive(symptom.id)}
-						class="w-full p-4 flex items-center justify-between hover:bg-cream-50 transition-colors"
-					>
-						<div class="flex items-center gap-3">
-							<span class="text-xl">{symptom.icon}</span>
-							<span class={cn(
-								'text-sm',
-								symptom.isActive ? 'text-charcoal-600' : 'text-charcoal-400 line-through'
-							)}>
-								{i18n.locale === 'zh-HK' && symptom.nameZh ? symptom.nameZh : symptom.name}
-							</span>
-						</div>
-						<div class={cn(
-							'w-10 h-6 rounded-full transition-colors relative',
-							symptom.isActive ? 'bg-pink-400' : 'bg-charcoal-200'
-						)}>
-							<div class={cn(
-								'absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform',
-								symptom.isActive ? 'translate-x-5' : 'translate-x-1'
-							)}></div>
-						</div>
-					</button>
-				{/each}
-			</div>
-		</section>
+		<ToggleListSection
+			title={i18n.t.period.symptoms}
+			subtitle={i18n.t.settings.manageAilments}
+			icon={Droplets}
+			iconColor="text-pink-500"
+			items={healthStore.customSymptoms}
+			toggleActiveColor="pink"
+			maxHeight="sm"
+			onToggle={healthStore.toggleCustomSymptomActive.bind(healthStore)}
+			onEdit={(item) => openEditModal('symptom', item)}
+			onDelete={(item) => deleteItem = { type: 'symptom', item }}
+		/>
 	{/if}
 
 	<!-- Data Management -->
-	<section class="card overflow-hidden">
-		<div class="p-4 border-b border-charcoal-100">
-			<div class="flex items-center gap-3">
-				<Shield class="w-5 h-5 text-jade-500" />
-				<div>
-					<span class="font-medium text-charcoal-600">{i18n.t.settings.data}</span>
-					<p class="text-xs text-charcoal-400">{i18n.t.settings.privacyNote}</p>
-				</div>
-			</div>
-		</div>
-		<div class="divide-y divide-charcoal-100">
-			<button
-				type="button"
-				onclick={handleExport}
-				disabled={isExporting}
-				class="w-full p-4 flex items-center justify-between hover:bg-cream-50 transition-colors disabled:opacity-50"
-			>
-				<div class="flex items-center gap-3">
-					<Download class="w-5 h-5 text-charcoal-500" />
-					<span class="text-sm text-charcoal-600">{i18n.t.settings.exportData}</span>
-				</div>
-				<ChevronRight class="w-5 h-5 text-charcoal-400" />
-			</button>
-			<button
-				type="button"
-				onclick={handleImport}
-				disabled={isImporting}
-				class="w-full p-4 flex items-center justify-between hover:bg-cream-50 transition-colors disabled:opacity-50"
-			>
-				<div class="flex items-center gap-3">
-					<Upload class="w-5 h-5 text-charcoal-500" />
-					<span class="text-sm text-charcoal-600">{i18n.t.settings.importData}</span>
-				</div>
-				<ChevronRight class="w-5 h-5 text-charcoal-400" />
-			</button>
-			<button
-				type="button"
-				onclick={() => showClearConfirm = true}
-				class="w-full p-4 flex items-center justify-between hover:bg-coral-50 transition-colors"
-			>
-				<div class="flex items-center gap-3">
-					<Trash2 class="w-5 h-5 text-coral-500" />
-					<span class="text-sm text-coral-600">{i18n.t.settings.clearData}</span>
-				</div>
-				<ChevronRight class="w-5 h-5 text-coral-400" />
-			</button>
-		</div>
-	</section>
+	<DataManagement
+		{isExporting}
+		{isImporting}
+		onExport={handleExport}
+		onImport={handleImport}
+		onClearData={() => showClearConfirm = true}
+	/>
 
 	<!-- Version -->
 	<p class="text-center text-xs text-charcoal-300">
@@ -368,45 +249,32 @@
 	</p>
 </main>
 
-<!-- Clear Data Confirmation Modal -->
-{#if showClearConfirm}
-	<div
-		class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in"
-		onclick={() => showClearConfirm = false}
-		onkeydown={(e) => e.key === 'Escape' && (showClearConfirm = false)}
-		role="button"
-		tabindex="-1"
-	>
-		<div
-			class="bg-white rounded-2xl p-6 max-w-sm w-full animate-slide-up"
-			onclick={(e) => e.stopPropagation()}
-			onkeydown={() => {}}
-			role="dialog"
-			tabindex="-1"
-		>
-			<h3 class="text-lg font-semibold text-charcoal-600 mb-2">
-				{i18n.t.settings.clearData}
-			</h3>
-			<p class="text-sm text-charcoal-500 mb-6">
-				{i18n.t.settings.clearDataConfirm}
-			</p>
-			<div class="flex gap-3">
-				<button
-					type="button"
-					onclick={() => showClearConfirm = false}
-					class="btn-secondary flex-1"
-				>
-					{i18n.t.common.cancel}
-				</button>
-				<button
-					type="button"
-					onclick={handleClearData}
-					class="btn-primary flex-1 !bg-coral-500 hover:!bg-coral-600"
-				>
-					{i18n.t.common.delete}
-				</button>
-			</div>
-		</div>
-	</div>
+<!-- Edit Modal -->
+{#if editingItem}
+	<EditItemModal
+		type={editingItem.type}
+		name={editingItem.item.name}
+		nameZh={editingItem.item.nameZh || ''}
+		icon={editingItem.item.icon}
+		category={editingItem.type === 'trigger' && 'category' in editingItem.item ? editingItem.item.category : undefined}
+		onClose={closeEditModal}
+		onSave={handleSaveEdit}
+	/>
 {/if}
 
+<!-- Delete Confirmation Modal -->
+{#if deleteItem}
+	<DeleteConfirmModal
+		item={deleteItem.item}
+		onClose={() => deleteItem = null}
+		onConfirm={handleDelete}
+	/>
+{/if}
+
+<!-- Clear Data Confirmation Modal -->
+{#if showClearConfirm}
+	<ClearDataModal
+		onClose={() => showClearConfirm = false}
+		onConfirm={handleClearData}
+	/>
+{/if}

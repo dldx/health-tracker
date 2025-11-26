@@ -18,11 +18,15 @@ A privacy-first health tracking web application for monitoring ailments and thei
 | 🤕 **Ailment Tracking** - Log headaches, stomach pain, fatigue, etc. | 🤕 **不適追蹤** - 記錄頭痛、肚痛、疲倦等症狀 |
 | 🩸 **Period Tracking** - Log menstrual cycle with flow and symptoms | 🩸 **經期追蹤** - 記錄經期流量同症狀 |
 | 🎯 **Trigger Identification** - Track potential causes | 🎯 **誘因識別** - 追蹤可能嘅成因 |
-| 📊 **Statistics & Insights** - Visualize patterns | 📊 **統計分析** - 視覺化健康模式 |
-| ➕ **Custom Types** - Add your own ailments and symptoms | ➕ **自訂類型** - 新增自己嘅不適同症狀 |
+| 📊 **Statistics & Insights** - Visualize patterns with advanced analytics | 📊 **統計分析** - 視覺化健康模式同深入分析 |
+| 📈 **Period Correlation** - Discover how symptoms relate to menstrual cycle | 📈 **經期關聯** - 發現症狀同經期嘅關係 |
+| 🗓️ **Calendar Heatmap** - Visual overview with period indicators | 🗓️ **日曆熱圖** - 視覺化概覽連埋經期標示 |
+| 🔍 **Smart Filtering** - Filter all stats by specific ailment | 🔍 **智能篩選** - 按特定症狀篩選所有統計 |
+| ➕ **Custom Types** - Add, edit, and delete custom ailments/triggers | ➕ **自訂類型** - 新增、編輯、刪除自訂症狀同誘因 |
 | 🔄 **Smart Sorting** - Most used items appear first | 🔄 **智能排序** - 常用項目排喺最前 |
-| ⚙️ **Customization** - Toggle ailments and triggers | ⚙️ **自訂設定** - 切換不適類型同誘因 |
+| ⚙️ **Customization** - Full control over your tracking options | ⚙️ **自訂設定** - 完全掌控你嘅追蹤選項 |
 | 🔒 **Privacy First** - All data stored locally | 🔒 **私隱優先** - 所有資料只儲存喺你部機 |
+| 📱 **Mobile Optimized** - Works perfectly on all devices | 📱 **流動優化** - 所有裝置完美運行 |
 
 ### Default Ailment Types 預設不適類型
 
@@ -143,16 +147,23 @@ bun run cap:open
 ```
 src/
 ├── lib/
-│   ├── components/        # UI components
+│   ├── components/
+│   │   ├── stats/        # Stats page components (10)
+│   │   ├── today/        # Today page components (2)
+│   │   ├── settings/     # Settings page components (6)
+│   │   └── ...           # Shared components
 │   ├── db/               # Dexie database
-│   ├── i18n/             # Translations
+│   ├── i18n/             # Translations (EN, 繁體)
 │   ├── stores/           # Svelte stores
 │   ├── types/            # TypeScript types
-│   └── utils/            # Utilities
+│   └── utils/
+│       ├── cn.ts         # Class name utility
+│       ├── date.ts       # Date formatting
+│       └── uuid.ts       # UUID generation (mobile-safe)
 ├── routes/
 │   ├── +page.svelte      # Day view (main)
-│   ├── stats/            # Statistics
-│   └── settings/         # Settings
+│   ├── stats/            # Statistics & analytics
+│   └── settings/         # Settings & customization
 └── app.css               # Global styles
 ```
 
@@ -187,6 +198,7 @@ The Chinese interface uses Traditional Chinese characters with Cantonese express
 
 ## 📚 Documentation 文件
 
+- [Features Guide](docs/FEATURES.md) - Complete feature documentation **NEW**
 - [Design System](docs/DESIGN.md) - Colors, typography, components
 - [Technical Architecture](docs/TECHNICAL.md) - Data models, database schema
 - [Cantonese Guide](docs/CANTONESE.md) - Language guidelines

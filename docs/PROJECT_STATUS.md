@@ -88,6 +88,32 @@
 - [x] Custom color palette (jade, coral, gold, cream)
 - [x] Fix all Svelte linting warnings
 
+### Phase 5.5: Advanced Features 進階功能
+
+- [x] Advanced statistics page improvements
+  - [x] Period correlation analysis (during vs. outside period)
+  - [x] Ailment filtering across all visualizations
+  - [x] Calendar heatmap with period day indicators
+  - [x] Period included as trigger in correlation analysis
+  - [x] Stacked bar charts for period comparison
+  - [x] Smart messages for exclusive occurrences
+  - [x] Sticky filter header with scroll shadow
+  - [x] Consistent color scheme throughout
+- [x] Edit and delete custom items
+  - [x] Edit/delete custom ailments
+  - [x] Edit/delete custom triggers (with category)
+  - [x] Edit/delete custom period symptoms
+  - [x] Confirmation modals for deletions
+- [x] Mobile compatibility improvements
+  - [x] UUID generation fallback for non-HTTPS contexts
+  - [x] Works on all mobile browsers (HTTP/HTTPS)
+- [x] Component architecture improvements
+  - [x] Componentize stats page (10 components)
+  - [x] Componentize today page (2 components)
+  - [x] Componentize settings page (6 components)
+  - [x] Total: 18 new reusable components
+  - [x] Page sizes reduced by 30-64%
+
 ### Phase 6: Mobile 流動裝置
 
 - [x] Add Capacitor scripts to package.json
@@ -105,18 +131,43 @@ eliza-health-tracker/
 ├── docs/
 │   ├── CANTONESE.md          # Cantonese language guide
 │   ├── DESIGN.md             # Design system
+│   ├── FEATURES.md           # Feature documentation (NEW)
 │   ├── PROJECT_STATUS.md     # This file
 │   └── TECHNICAL.md          # Technical architecture
 ├── src/
 │   ├── lib/
-│   │   ├── components/       # 9 UI components
-│   │   │   ├── AilmentSelector.svelte   # Ailment quick-select with add new
+│   │   ├── components/       # 27 UI components total
+│   │   │   ├── stats/        # Stats page components (10)
+│   │   │   │   ├── SummaryCards.svelte
+│   │   │   │   ├── SeverityTrendChart.svelte
+│   │   │   │   ├── TimeOfDayPattern.svelte
+│   │   │   │   ├── WeeklyPattern.svelte
+│   │   │   │   ├── TriggerCorrelation.svelte
+│   │   │   │   ├── AilmentFrequency.svelte
+│   │   │   │   ├── TopTriggers.svelte
+│   │   │   │   ├── CalendarHeatmap.svelte
+│   │   │   │   ├── CycleStatistics.svelte
+│   │   │   │   ├── PeriodCorrelation.svelte
+│   │   │   │   └── index.ts
+│   │   │   ├── today/        # Today page components (2)
+│   │   │   │   ├── PeriodTrackerButton.svelte
+│   │   │   │   ├── TodayEntriesSection.svelte
+│   │   │   │   └── index.ts
+│   │   │   ├── settings/     # Settings page components (6)
+│   │   │   │   ├── LanguageSelector.svelte
+│   │   │   │   ├── ToggleListSection.svelte
+│   │   │   │   ├── DataManagement.svelte
+│   │   │   │   ├── EditItemModal.svelte
+│   │   │   │   ├── DeleteConfirmModal.svelte
+│   │   │   │   ├── ClearDataModal.svelte
+│   │   │   │   └── index.ts
+│   │   │   ├── AilmentSelector.svelte   # Shared components (9)
 │   │   │   ├── DayPicker.svelte
 │   │   │   ├── HealthEntryCard.svelte
 │   │   │   ├── LogAilmentSheet.svelte
 │   │   │   ├── MoodSelector.svelte
 │   │   │   ├── Navigation.svelte
-│   │   │   ├── PeriodLogger.svelte      # Period tracking with symptoms
+│   │   │   ├── PeriodLogger.svelte
 │   │   │   ├── SeveritySlider.svelte
 │   │   │   └── TriggerSelector.svelte
 │   │   ├── db/
@@ -132,14 +183,15 @@ eliza-health-tracker/
 │   │   │   └── index.ts      # TypeScript interfaces
 │   │   └── utils/
 │   │       ├── cn.ts         # Class name utility
-│   │       └── date.ts       # Date formatting
+│   │       ├── date.ts       # Date formatting
+│   │       └── uuid.ts       # UUID generation (mobile-safe)
 │   └── routes/
 │       ├── +layout.svelte    # App layout
-│       ├── +page.svelte      # Day View (main)
+│       ├── +page.svelte      # Day View (114 lines)
 │       ├── settings/
-│       │   └── +page.svelte  # Settings
+│       │   └── +page.svelte  # Settings (264 lines)
 │       └── stats/
-│           └── +page.svelte  # Statistics
+│           └── +page.svelte  # Statistics (584 lines)
 ├── static/
 │   └── favicon.svg           # App icon
 ├── app.css                   # Global styles + Tailwind
@@ -190,6 +242,9 @@ const newEntry = {
 | Tailwind v4 `@apply` with custom classes | Rewrote CSS using plain CSS instead |
 | DataCloneError with Dexie | Explicitly create plain objects for IndexedDB |
 | Save button hidden by nav bar | Added `pb-20` padding to sheet footer |
+| `crypto.randomUUID` not available on mobile HTTP | Created UUID utility with `crypto.getRandomValues()` fallback |
+| Period not shown with ailment filter | Changed logic to always show period indicator separately |
+| Sticky filter shadow always visible | Added scroll detection with conditional shadow |
 
 ---
 
@@ -214,15 +269,24 @@ bun run mobile:build
 
 ## 💡 Future Ideas 未來構思
 
-- [ ] Dark mode support
-- [ ] Medication tracking integration
-- [ ] Weather API integration for automatic weather triggers
-- [ ] Photo attachments for food triggers
-- [ ] Share reports with healthcare providers
-- [ ] Reminder notifications
-- [ ] Widgets for quick logging
-- [ ] Apple Watch/Wear OS support
-- [ ] Cloud sync (optional, privacy-preserving)
+### Planned Features 計劃功能
+- [ ] Dark mode support 深色模式
+- [ ] Medication tracking integration 藥物追蹤整合
+- [ ] Weather API integration for automatic weather triggers 天氣 API 整合自動天氣誘因
+- [ ] Photo attachments for food triggers 食物誘因照片附件
+- [ ] Share reports with healthcare providers 分享報告給醫療人員
+- [ ] Reminder notifications 提醒通知
+- [ ] Widgets for quick logging 快速記錄小工具
+- [ ] Apple Watch/Wear OS support 手錶支援
+- [ ] Cloud sync (optional, privacy-preserving) 雲端同步（可選，保護私隱）
+
+### Potential Enhancements 潛在改進
+- [ ] AI-powered pattern recognition AI 驅動的模式識別
+- [ ] Predictive analytics for symptom forecasting 預測分析症狀預報
+- [ ] Barcode scanning for medication tracking 條碼掃描藥物追蹤
+- [ ] Voice input for quick logging 語音輸入快速記錄
+- [ ] Export to PDF reports PDF 報告匯出
+- [ ] Integration with health apps (Apple Health, Google Fit) 健康應用整合
 
 ---
 
