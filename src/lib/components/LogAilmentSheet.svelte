@@ -78,7 +78,7 @@
 
 <!-- Backdrop -->
 <div
-	class="fixed inset-0 bg-black/50 z-50 animate-fade-in"
+	class="z-50 fixed inset-0 bg-black/50 animate-fade-in"
 	onclick={onClose}
 	onkeydown={(e) => e.key === 'Escape' && onClose()}
 	role="button"
@@ -86,10 +86,10 @@
 ></div>
 
 <!-- Sheet -->
-<div class="fixed inset-x-0 bottom-0 z-50 animate-slide-in-bottom">
-	<div class="bg-white rounded-t-3xl max-h-[90vh] flex flex-col safe-bottom">
+<div class="bottom-0 z-50 fixed inset-x-0 animate-slide-in-bottom">
+	<div class="flex flex-col bg-white rounded-t-3xl max-h-[90vh]">
 		<!-- Header -->
-		<div class="sticky top-0 bg-white border-b border-charcoal-100 px-4 py-4 flex items-center justify-between">
+		<div class="top-0 sticky flex justify-between items-center bg-white px-4 py-4 border-charcoal-100 border-b">
 			<div class="flex items-center gap-3">
 				<span class="text-3xl">
 					{#if ailment.icon.includes(':')}
@@ -102,7 +102,7 @@
 					<h2 class="font-semibold text-charcoal-600">
 						{i18n.t.log.title}
 					</h2>
-					<p class="text-sm text-charcoal-400">
+					<p class="text-charcoal-400 text-sm">
 						{i18n.localizedName(ailment)}
 					</p>
 				</div>
@@ -110,7 +110,7 @@
 			<button
 				type="button"
 				onclick={onClose}
-				class="p-2 rounded-lg hover:bg-cream-200 transition-colors"
+				class="hover:bg-cream-200 p-2 rounded-lg transition-colors"
 				aria-label="Close"
 			>
 				<X class="w-5 h-5 text-charcoal-500" />
@@ -118,10 +118,10 @@
 		</div>
 
 		<!-- Content -->
-		<div class="p-4 space-y-6 overflow-y-auto flex-1">
+		<div class="flex-1 space-y-6 p-4 overflow-y-auto">
 			<!-- Time -->
 			<div class="space-y-2">
-				<label for="time" class="text-sm font-medium text-charcoal-500 flex items-center gap-2">
+				<label for="time" class="flex items-center gap-2 font-medium text-charcoal-500 text-sm">
 					<Clock class="w-4 h-4" />
 					{i18n.t.log.time}
 				</label>
@@ -145,7 +145,7 @@
 
 			<!-- Notes -->
 			<div class="space-y-2">
-				<label for="notes" class="text-sm font-medium text-charcoal-500">
+				<label for="notes" class="font-medium text-charcoal-500 text-sm">
 					{i18n.t.log.notes}
 				</label>
 <textarea
@@ -159,12 +159,12 @@
 		</div>
 
 		<!-- Footer -->
-		<div class="bg-white border-t border-charcoal-100 p-4 pb-20 flex-shrink-0">
+		<div class="flex-shrink-0 bg-white p-4 pb-20 border-charcoal-100 border-t">
 			<button
 				type="button"
 				onclick={handleSave}
 				disabled={isSaving}
-				class="btn-primary w-full disabled:opacity-50"
+				class="disabled:opacity-50 w-full btn-primary"
 			>
 				{isSaving ? i18n.t.common.loading : i18n.t.log.saveEntry}
 			</button>

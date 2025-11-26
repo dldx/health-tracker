@@ -12,7 +12,7 @@ export const zhHK: Translations = {
 		delete: '刪除',
 		edit: '編輯',
 		add: '新增',
-		back: '返回',
+		back: '返去',
 		close: '關閉',
 		done: '搞掂',
 		loading: '載入緊...',
@@ -140,7 +140,7 @@ export const zhHK: Translations = {
 		lessCommon: '較少見',
 		avgSeverityDuring: '經期期間平均嚴重度',
 		avgSeverityOutside: '經期以外平均嚴重度',
-		noPeriodData: '記錄經期資料以查看關聯',
+		noPeriodData: '記錄經期資料嚟睇關聯',
 		onlyDuringPeriod: '只喺經期期間發生',
 		onlyOutsidePeriod: '只喺經期以外發生',
 		noCorrelation: '搵唔到關聯'
@@ -158,9 +158,9 @@ export const zhHK: Translations = {
 		importData: '匯入資料',
 		clearData: '清除所有資料',
 		clearDataConfirm: '你肯定？呢個會刪除你所有嘅健康記錄。',
-		dataCleared: '所有資料已清除',
-		exportSuccess: '匯出成功',
-		importSuccess: '匯入成功',
+		dataCleared: '所有資料清除咗喇',
+		exportSuccess: '匯出咗喇',
+		importSuccess: '匯入咗喇',
 		importInvalid: '檔案格式唔啱',
 		language: '語言',
 		privacyNote: '所有資料只會儲存喺你部機',
@@ -171,14 +171,14 @@ export const zhHK: Translations = {
 		deleteConfirm: '你確定要刪除呢個？',
 		deleteWarning: '呢個動作冇得撤銷。',
 		customOnly: '只有自訂項目可以編輯或刪除',
-		updated: '更新成功',
-		deleted: '刪除成功',
+		updated: '更新咗喇',
+		deleted: '刪除咗喇',
 		personalization: '個人化',
 		customName: '你嘅名',
 		customNamePlaceholder: '例如：小明',
 		customNameHint: '自訂你嘅應用程式標題',
-		customNameSaved: '名稱已儲存！',
-		customNameCleared: '名稱已清除',
+		customNameSaved: '儲存咗喇！',
+		customNameCleared: '清除咗喇',
 		appTitleWithName: '{name} 嘅健康追蹤'
 	},
 
@@ -207,11 +207,11 @@ export const zhHK: Translations = {
 	},
 
 	errors: {
-		loadFailed: '載入資料失敗',
-		saveFailed: '儲存失敗',
-		deleteFailed: '刪除失敗',
-		importFailed: '匯入資料失敗',
-		exportFailed: '匯出資料失敗'
+		loadFailed: '載入唔到資料',
+		saveFailed: '儲存唔到',
+		deleteFailed: '刪除唔到',
+		importFailed: '匯入唔到資料',
+		exportFailed: '匯出唔到資料'
 	},
 
 	tiles: {
@@ -220,8 +220,8 @@ export const zhHK: Translations = {
 		editMode: '編輯佈局',
 		doneEditing: '搞掂',
 		resetLayout: '重設為預設',
-		resetSuccess: '已重設為預設佈局',
-		dragHint: '拖拽嚟重新排序，切換可見性',
+		resetSuccess: '重設咗做預設佈局',
+		dragHint: '撳住拉嚟排序，開關顯示',
 		names: {
 			dayPicker: '日期選擇器',
 			mood: '心情追蹤',

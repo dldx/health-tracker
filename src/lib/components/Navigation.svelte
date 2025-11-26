@@ -19,18 +19,18 @@
 	}
 </script>
 
-<nav class="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-charcoal-100 safe-bottom">
-	<div class="flex items-center justify-around max-w-md mx-auto">
+<nav class="right-0 bottom-0 left-0 z-50 fixed bg-white border-charcoal-100 border-t">
+	<div class="flex justify-around items-center mx-auto max-w-md">
 		{#each navItems as item}
 			<a
 				href={item.route}
 				class={cn(
-					'nav-item flex-1 py-3',
+					'flex-1 py-3 nav-item',
 					isActive(item.route) && 'nav-item-active'
 				)}
 			>
 				<item.icon class="w-6 h-6" />
-				<span class="text-xs font-medium">{i18n.t.nav[item.labelKey]}</span>
+				<span class="font-medium text-xs">{i18n.t.nav[item.labelKey]}</span>
 			</a>
 		{/each}
 	</div>
