@@ -13,6 +13,7 @@
 		DeleteConfirmModal,
 		ClearDataModal
 	} from '$lib/components/settings';
+	import { TileSettingsSection } from '$lib/components/tiles';
 	import type { Language, ExportData, AilmentType, TriggerType, CustomPeriodSymptom, TriggerCategory } from '$lib/types';
 
 	let showClearConfirm = $state(false);
@@ -180,13 +181,13 @@
 	}
 </script>
 
-<main class="max-w-md mx-auto px-4 py-6 space-y-6 pb-24">
+<main class="space-y-6 mx-auto px-4 py-6 pb-24 max-w-md">
 	<!-- Header -->
 	<header class="text-center">
-		<h1 class="text-2xl font-bold text-jade-600 neon-glow">
+		<h1 class="font-bold text-jade-600 text-2xl neon-glow">
 			{i18n.t.settings.title}
 		</h1>
-		<p class="text-sm text-charcoal-400">
+		<p class="text-charcoal-400 text-sm">
 			{i18n.t.settings.subtitle}
 		</p>
 	</header>
@@ -196,6 +197,9 @@
 
 	<!-- Personalization (Easter Egg) -->
 	<PersonalizationSection />
+
+	<!-- Dashboard Layout / Tile Settings -->
+	<TileSettingsSection />
 
 	<!-- Ailment Types -->
 	<ToggleListSection
@@ -248,7 +252,7 @@
 	/>
 
 	<!-- Version -->
-	<p class="text-center text-xs text-charcoal-300">
+	<p class="text-charcoal-300 text-xs text-center">
 		{i18n.t.settings.version} 1.0.0
 	</p>
 </main>

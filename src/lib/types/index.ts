@@ -175,6 +175,8 @@ export interface AppSettings {
 	language: Language;
 	theme: Theme;
 	customName?: string; // Easter egg: personalize the app title (e.g., "Eliza's Health Tracker")
+	tileConfig?: TileConfig[]; // Home page tile order and visibility settings
+	statsTileConfig?: StatsTileConfig[]; // Stats page tile order and visibility settings
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -184,6 +186,77 @@ export interface AppSettings {
  * 導覽路由
  */
 export type NavRoute = '/' | '/stats' | '/settings';
+
+/**
+ * Tile identifiers for the main page
+ * 主頁面磁貼識別碼
+ */
+export type TileId = 'dayPicker' | 'mood' | 'period' | 'ailments' | 'entries';
+
+/**
+ * Configuration for a single tile
+ * 單個磁貼嘅配置
+ */
+export interface TileConfig {
+	id: TileId;
+	visible: boolean;
+	order: number;
+}
+
+/**
+ * Default tile configurations
+ * 預設磁貼配置
+ */
+export const DEFAULT_TILE_ORDER: TileConfig[] = [
+	{ id: 'dayPicker', visible: true, order: 0 },
+	{ id: 'mood', visible: true, order: 1 },
+	{ id: 'period', visible: true, order: 2 },
+	{ id: 'ailments', visible: true, order: 3 },
+	{ id: 'entries', visible: true, order: 4 }
+];
+
+/**
+ * Tile identifiers for the stats page
+ * 統計頁面磁貼識別碼
+ */
+export type StatsTileId =
+	| 'summary'
+	| 'severityTrend'
+	| 'timeOfDay'
+	| 'weeklyPattern'
+	| 'triggerCorrelation'
+	| 'ailmentFrequency'
+	| 'topTriggers'
+	| 'calendarHeatmap'
+	| 'cycleStats'
+	| 'periodCorrelation';
+
+/**
+ * Configuration for a stats tile
+ * 統計磁貼嘅配置
+ */
+export interface StatsTileConfig {
+	id: StatsTileId;
+	visible: boolean;
+	order: number;
+}
+
+/**
+ * Default stats tile configurations
+ * 預設統計磁貼配置
+ */
+export const DEFAULT_STATS_TILE_ORDER: StatsTileConfig[] = [
+	{ id: 'summary', visible: true, order: 0 },
+	{ id: 'severityTrend', visible: true, order: 1 },
+	{ id: 'timeOfDay', visible: true, order: 2 },
+	{ id: 'weeklyPattern', visible: true, order: 3 },
+	{ id: 'triggerCorrelation', visible: true, order: 4 },
+	{ id: 'ailmentFrequency', visible: true, order: 5 },
+	{ id: 'topTriggers', visible: true, order: 6 },
+	{ id: 'calendarHeatmap', visible: true, order: 7 },
+	{ id: 'cycleStats', visible: true, order: 8 },
+	{ id: 'periodCorrelation', visible: true, order: 9 }
+];
 
 /**
  * Health entry with resolved references

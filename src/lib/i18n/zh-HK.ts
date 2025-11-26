@@ -214,6 +214,35 @@ export const zhHK: Translations = {
 		exportFailed: '匯出資料失敗'
 	},
 
+	tiles: {
+		title: '主頁佈局',
+		subtitle: '自訂你嘅主頁',
+		editMode: '編輯佈局',
+		doneEditing: '搞掂',
+		resetLayout: '重設為預設',
+		resetSuccess: '已重設為預設佈局',
+		dragHint: '拖拽嚟重新排序，切換可見性',
+		names: {
+			dayPicker: '日期選擇器',
+			mood: '心情追蹤',
+			period: '經期追蹤',
+			ailments: '不適記錄',
+			entries: '今日記錄'
+		},
+		statsNames: {
+			summary: '摘要卡片',
+			severityTrend: '嚴重程度趨勢',
+			timeOfDay: '日間時段分佈',
+			weeklyPattern: '每週模式',
+			triggerCorrelation: '誘因關聯',
+			ailmentFrequency: '不適頻率',
+			topTriggers: '主要誘因',
+			calendarHeatmap: '日曆熱圖',
+			cycleStats: '週期統計',
+			periodCorrelation: '經期關聯'
+		}
+	},
+
 	period: {
 		title: '經期追蹤',
 		subtitle: '記錄你嘅週期',

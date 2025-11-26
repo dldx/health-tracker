@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { ChevronLeft, ChevronRight, Filter } from 'lucide-svelte';
+	import { DragDropProvider, DragOverlay, KeyboardSensor, PointerSensor } from '@dnd-kit-svelte/svelte';
+	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
+	import { move } from '@dnd-kit/helpers';
+	import { ChevronLeft, ChevronRight, Filter, Settings2, Check, GripVertical, Eye, EyeOff } from 'lucide-svelte';
 	import Icon from '@iconify/svelte';
 	import { i18n } from '$lib/i18n';
 	import { healthStore } from '$lib/stores/health.svelte';
@@ -17,6 +20,7 @@
 		CycleStatistics,
 		PeriodCorrelation
 	} from '$lib/components/stats';
+	import type { StatsTileConfig, StatsTileId } from '$lib/types';
 
 	// Current view month
 	let currentYear = $state(new Date().getFullYear());
@@ -28,6 +32,78 @@
 	// Scroll state for sticky header shadow
 	let scrollY = $state(0);
 	const isScrolled = $derived(scrollY > 20);
+
+	// Edit mode for tile reordering
+	let isEditMode = $state(false);
+
+	// Local tile order for drag operations
+	let localTiles = $state<StatsTileConfig[]>([]);
+
+	// Sync local tiles with store
+	$effect(() => {
+		const sorted = healthStore.sortedStatsTiles;
+		const visible = healthStore.visibleStatsTiles;
+
+		if (isEditMode) {
+			localTiles = [...sorted];
+		} else {
+			localTiles = [...visible];
+		}
+	});
+
+	function toggleEditMode() {
+		isEditMode = !isEditMode;
+	}
+
+	async function toggleTileVisibility(tileId: StatsTileId) {
+		await healthStore.toggleStatsTileVisibility(tileId);
+	}
+
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	function handleDragOver(event: any) {
+		localTiles = move(localTiles, event) as StatsTileConfig[];
+	}
+
+	async function handleDragEnd(event: { canceled?: boolean }) {
+		if (event.canceled) return;
+		const newOrder = localTiles.map(t => t.id);
+		await healthStore.reorderStatsTiles(newOrder);
+	}
+
+	function getTileName(id: StatsTileId): string {
+		return i18n.t.tiles.statsNames[id];
+	}
+
+	function getTileShouldShow(id: StatsTileId): boolean {
+		switch (id) {
+			case 'summary':
+				return monthEntries.length > 0;
+			case 'severityTrend':
+				return monthEntries.length > 1;
+			case 'timeOfDay':
+			case 'weeklyPattern':
+				return monthEntries.length > 0;
+			case 'triggerCorrelation':
+				return triggerCorrelations().length > 0;
+			case 'ailmentFrequency':
+				return selectedAilmentId === null;
+			case 'topTriggers':
+				return selectedAilmentId === null || triggerCorrelations().length === 0;
+			case 'calendarHeatmap':
+				return true;
+			case 'cycleStats':
+				return !selectedAilmentId && cycleStats.totalCyclesTracked > 0;
+			case 'periodCorrelation':
+				return periodAilmentCorrelation() !== null || (healthStore.periodEntries.length === 0 && monthEntries.length > 0);
+			default:
+				return true;
+		}
+	}
+
+	interface SortableTileProps {
+		tile: StatsTileConfig;
+		index: number;
+	}
 
 	function previousMonth() {
 		if (currentMonth === 0) {
@@ -402,14 +478,40 @@
 
 <main class="space-y-5 mx-auto px-4 py-6 pb-24 max-w-md">
 	<!-- Header -->
-	<header class="text-center">
+	<header class="relative text-center">
 		<h1 class="font-bold text-jade-600 text-2xl neon-glow">
 			{i18n.t.stats.title}
 		</h1>
 		<p class="text-charcoal-400 text-sm">
 			{i18n.t.stats.subtitle}
 		</p>
+
+		<!-- Edit Mode Toggle -->
+		<button
+			type="button"
+			onclick={toggleEditMode}
+			class="top-1/2 right-0 absolute p-2 rounded-lg transition-all -translate-y-1/2"
+			class:bg-jade-100={isEditMode}
+			class:text-jade-600={isEditMode}
+			class:hover:bg-jade-200={isEditMode}
+			class:text-charcoal-400={!isEditMode}
+			class:hover:bg-charcoal-100={!isEditMode}
+			class:hover:text-charcoal-600={!isEditMode}
+			title={isEditMode ? i18n.t.tiles.doneEditing : i18n.t.tiles.editMode}
+		>
+			{#if isEditMode}
+				<Check class="w-5 h-5" />
+			{:else}
+				<Settings2 class="w-5 h-5" />
+			{/if}
+		</button>
 	</header>
+
+	{#if isEditMode}
+		<div class="bg-jade-50 px-4 py-2 border border-jade-100 rounded-lg text-charcoal-400 text-sm text-center">
+			{i18n.t.tiles.dragHint}
+		</div>
+	{/if}
 
 	<!-- Sticky Controls: Month Navigator + Ailment Filter -->
 	<div
@@ -505,71 +607,28 @@
 			<div class="text-charcoal-400">{i18n.t.common.loading}</div>
 		</div>
 	{:else}
-		<!-- Summary Cards -->
-		{#if monthEntries.length > 0}
-			<SummaryCards {...summaryStats()} />
-		{/if}
+		<DragDropProvider
+			sensors={[KeyboardSensor, PointerSensor]}
+			onDragOver={handleDragOver}
+			onDragEnd={handleDragEnd}
+		>
+			<div class="space-y-5">
+				{#each localTiles as tile, index (tile.id)}
+					{@render SortableTileWrapper({ tile, index })}
+				{/each}
+			</div>
 
-		<!-- Severity Trend Chart -->
-		{#if monthEntries.length > 1}
-			<SeverityTrendChart trend={severityTrend()} {monthDates} />
-		{/if}
-
-		<!-- Time of Day Pattern -->
-		{#if monthEntries.length > 0}
-			<TimeOfDayPattern stats={timeOfDayStats()} />
-		{/if}
-
-		<!-- Weekly Pattern -->
-		{#if monthEntries.length > 0}
-			<WeeklyPattern stats={weekdayStats()} />
-		{/if}
-
-		<!-- Trigger Correlation Analysis -->
-		{#if triggerCorrelations().length > 0}
-			<TriggerCorrelation items={triggerCorrelations()} />
-		{/if}
-
-		<!-- Ailment Frequency (when no filter) -->
-		{#if selectedAilmentId === null}
-			<AilmentFrequency items={ailmentCounts()} maxCount={maxAilmentCount} />
-		{/if}
-
-		<!-- Top Triggers (when no filter or low correlation data) -->
-		{#if selectedAilmentId === null || triggerCorrelations().length === 0}
-			<TopTriggers items={triggerCounts()} maxCount={maxTriggerCount} />
-		{/if}
-
-		<!-- Calendar Heatmap -->
-		<CalendarHeatmap
-			{monthDates}
-			entriesByDate={entriesByDate()}
-			maxSeverityByDate={maxSeverityByDate()}
-			{periodDates}
-			firstDayOffset={getFirstDayOfMonth()}
-		/>
-
-		<!-- Cycle Statistics (only shown when no ailment filter) -->
-		{#if !selectedAilmentId && cycleStats.totalCyclesTracked > 0}
-			<CycleStatistics stats={cycleStats} />
-		{/if}
-
-		<!-- Period-Ailment Correlation -->
-		{#if periodAilmentCorrelation()}
-			<PeriodCorrelation
-				correlation={periodAilmentCorrelation()!}
-				{selectedAilmentName}
-				showPerAilmentBreakdown={!selectedAilmentId}
-			/>
-		{:else if healthStore.periodEntries.length === 0 && monthEntries.length > 0}
-			<!-- Prompt to log period data -->
-			<section class="p-4 card">
-				<div class="py-2 text-center">
-					<span class="block mb-2 text-2xl">🩸</span>
-					<p class="text-charcoal-500 text-sm">{i18n.t.stats.noPeriodData}</p>
-				</div>
-			</section>
-		{/if}
+		<DragOverlay>
+			{#snippet children(source)}
+				{@const tile = localTiles.find(t => t.id === source.id)}
+				{#if tile}
+					<div class="opacity-95 max-w-md rotate-1 scale-[1.02] pointer-events-none">
+						{@render TileContent(tile.id)}
+					</div>
+				{/if}
+			{/snippet}
+		</DragOverlay>
+		</DragDropProvider>
 
 		<!-- Empty state -->
 		{#if allMonthEntries.length === 0}
@@ -581,3 +640,171 @@
 		{/if}
 	{/if}
 </main>
+
+{#snippet SortableTileWrapper({ tile, index }: SortableTileProps)}
+	{@const sortable = useSortable({
+		id: tile.id,
+		index: () => index,
+		group: 'stats-tiles',
+		data: () => ({ tile, index }),
+		disabled: () => !isEditMode
+	})}
+	{@const shouldShow = getTileShouldShow(tile.id)}
+	{#if shouldShow || isEditMode}
+		<div
+			{@attach sortable.ref}
+			class="relative transition-all duration-200 sortable-tile"
+			class:opacity-50={sortable.isDragging.current}
+			class:scale-[1.02]={sortable.isDropTarget.current}
+			class:ring-2={sortable.isDropTarget.current}
+			class:ring-jade-400={sortable.isDropTarget.current}
+		>
+			{#if isEditMode}
+				<!-- Drag handle on the left -->
+				<div class="top-1/2 left-2 z-10 absolute -translate-y-1/2">
+					<button
+						{@attach sortable.handleRef}
+						type="button"
+						class="bg-jade-100 hover:bg-jade-200 shadow-sm p-1.5 border border-jade-200 rounded-lg touch-none cursor-grab active:cursor-grabbing"
+						aria-label="Drag to reorder"
+					>
+						<GripVertical class="w-4 h-4 text-jade-600" />
+					</button>
+				</div>
+
+				<!-- Visibility toggle on the right -->
+				<div class="top-1/2 right-2 z-10 absolute -translate-y-1/2">
+					<button
+						type="button"
+						onclick={() => toggleTileVisibility(tile.id)}
+						class="shadow-sm p-1.5 border rounded-lg transition-colors"
+						class:bg-jade-100={tile.visible}
+						class:border-jade-200={tile.visible}
+						class:hover:bg-jade-200={tile.visible}
+						class:bg-charcoal-100={!tile.visible}
+						class:border-charcoal-200={!tile.visible}
+						class:hover:bg-charcoal-200={!tile.visible}
+						aria-label={tile.visible ? 'Hide tile' : 'Show tile'}
+					>
+						{#if tile.visible}
+							<Eye class="w-4 h-4 text-jade-600" />
+						{:else}
+							<EyeOff class="w-4 h-4 text-charcoal-400" />
+						{/if}
+					</button>
+				</div>
+			{/if}
+
+			<div
+				class="transition-all duration-200"
+				class:pl-12={isEditMode}
+				class:pr-12={isEditMode}
+				class:opacity-40={isEditMode && (!tile.visible || !shouldShow)}
+				class:grayscale={isEditMode && (!tile.visible || !shouldShow)}
+			>
+				{@render TileContent(tile.id)}
+			</div>
+		</div>
+	{/if}
+{/snippet}
+
+{#snippet TileContent(tileId: StatsTileId)}
+	{#if tileId === 'summary'}
+		{#if monthEntries.length > 0}
+			<SummaryCards {...summaryStats()} />
+		{:else if isEditMode}
+			<div class="p-4 card text-center text-charcoal-400 text-sm">
+				{getTileName('summary')} - {i18n.t.stats.noData}
+			</div>
+		{/if}
+	{:else if tileId === 'severityTrend'}
+		{#if monthEntries.length > 1}
+			<SeverityTrendChart trend={severityTrend()} {monthDates} />
+		{:else if isEditMode}
+			<div class="p-4 card text-center text-charcoal-400 text-sm">
+				{getTileName('severityTrend')} - {i18n.t.stats.noData}
+			</div>
+		{/if}
+	{:else if tileId === 'timeOfDay'}
+		{#if monthEntries.length > 0}
+			<TimeOfDayPattern stats={timeOfDayStats()} />
+		{:else if isEditMode}
+			<div class="p-4 card text-center text-charcoal-400 text-sm">
+				{getTileName('timeOfDay')} - {i18n.t.stats.noData}
+			</div>
+		{/if}
+	{:else if tileId === 'weeklyPattern'}
+		{#if monthEntries.length > 0}
+			<WeeklyPattern stats={weekdayStats()} />
+		{:else if isEditMode}
+			<div class="p-4 card text-center text-charcoal-400 text-sm">
+				{getTileName('weeklyPattern')} - {i18n.t.stats.noData}
+			</div>
+		{/if}
+	{:else if tileId === 'triggerCorrelation'}
+		{#if triggerCorrelations().length > 0}
+			<TriggerCorrelation items={triggerCorrelations()} />
+		{:else if isEditMode}
+			<div class="p-4 card text-center text-charcoal-400 text-sm">
+				{getTileName('triggerCorrelation')} - {i18n.t.stats.noData}
+			</div>
+		{/if}
+	{:else if tileId === 'ailmentFrequency'}
+		{#if selectedAilmentId === null}
+			<AilmentFrequency items={ailmentCounts()} maxCount={maxAilmentCount} />
+		{:else if isEditMode}
+			<div class="p-4 card text-center text-charcoal-400 text-sm">
+				{getTileName('ailmentFrequency')} - Filtered
+			</div>
+		{/if}
+	{:else if tileId === 'topTriggers'}
+		{#if selectedAilmentId === null || triggerCorrelations().length === 0}
+			<TopTriggers items={triggerCounts()} maxCount={maxTriggerCount} />
+		{:else if isEditMode}
+			<div class="p-4 card text-center text-charcoal-400 text-sm">
+				{getTileName('topTriggers')} - Filtered
+			</div>
+		{/if}
+	{:else if tileId === 'calendarHeatmap'}
+		<CalendarHeatmap
+			{monthDates}
+			entriesByDate={entriesByDate()}
+			maxSeverityByDate={maxSeverityByDate()}
+			{periodDates}
+			firstDayOffset={getFirstDayOfMonth()}
+		/>
+	{:else if tileId === 'cycleStats'}
+		{#if !selectedAilmentId && cycleStats.totalCyclesTracked > 0}
+			<CycleStatistics stats={cycleStats} />
+		{:else if isEditMode}
+			<div class="p-4 card text-center text-charcoal-400 text-sm">
+				{getTileName('cycleStats')} - {cycleStats.totalCyclesTracked === 0 ? i18n.t.stats.noData : 'Filtered'}
+			</div>
+		{/if}
+	{:else if tileId === 'periodCorrelation'}
+		{#if periodAilmentCorrelation()}
+			<PeriodCorrelation
+				correlation={periodAilmentCorrelation()!}
+				{selectedAilmentName}
+				showPerAilmentBreakdown={!selectedAilmentId}
+			/>
+		{:else if healthStore.periodEntries.length === 0 && monthEntries.length > 0}
+			<section class="p-4 card">
+				<div class="py-2 text-center">
+					<span class="block mb-2 text-2xl">🩸</span>
+					<p class="text-charcoal-500 text-sm">{i18n.t.stats.noPeriodData}</p>
+				</div>
+			</section>
+		{:else if isEditMode}
+			<div class="p-4 card text-center text-charcoal-400 text-sm">
+				{getTileName('periodCorrelation')} - {i18n.t.stats.noData}
+			</div>
+		{/if}
+	{/if}
+{/snippet}
+
+<style>
+	.sortable-tile {
+		touch-action: none;
+	}
+</style>

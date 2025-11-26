@@ -211,6 +211,35 @@ export const en = {
 		exportFailed: 'Failed to export data'
 	},
 
+	tiles: {
+		title: 'Dashboard Layout',
+		subtitle: 'Customize your home screen',
+		editMode: 'Edit Layout',
+		doneEditing: 'Done',
+		resetLayout: 'Reset to Default',
+		resetSuccess: 'Layout reset to default',
+		dragHint: 'Drag to reorder, toggle visibility',
+		names: {
+			dayPicker: 'Date Picker',
+			mood: 'Mood Tracker',
+			period: 'Period Tracker',
+			ailments: 'Ailment Logger',
+			entries: "Today's Entries"
+		},
+		statsNames: {
+			summary: 'Summary Cards',
+			severityTrend: 'Severity Trend',
+			timeOfDay: 'Time of Day Pattern',
+			weeklyPattern: 'Weekly Pattern',
+			triggerCorrelation: 'Trigger Correlation',
+			ailmentFrequency: 'Ailment Frequency',
+			topTriggers: 'Top Triggers',
+			calendarHeatmap: 'Calendar Heatmap',
+			cycleStats: 'Cycle Statistics',
+			periodCorrelation: 'Period Correlation'
+		}
+	},
+
 	period: {
 		title: 'Period Tracking',
 		subtitle: 'Log your cycle',

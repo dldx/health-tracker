@@ -17,8 +17,13 @@ import type {
 	CustomPeriodSymptom,
 	HealthEntryWithDetails,
 	CycleStats,
-	AppSettings
+	AppSettings,
+	TileConfig,
+	TileId,
+	StatsTileConfig,
+	StatsTileId
 } from '$lib/types';
+import { DEFAULT_TILE_ORDER, DEFAULT_STATS_TILE_ORDER } from '$lib/types';
 import { getTodayISO, addDays } from '$lib/utils/date';
 import { generateUUID } from '$lib/utils/uuid';
 
@@ -35,6 +40,8 @@ class HealthStore {
 	periodEntries = $state<PeriodEntry[]>([]);
 	customSymptoms = $state<CustomPeriodSymptom[]>([]);
 	customName = $state<string | undefined>(undefined);
+	tileConfig = $state<TileConfig[]>([...DEFAULT_TILE_ORDER]);
+	statsTileConfig = $state<StatsTileConfig[]>([...DEFAULT_STATS_TILE_ORDER]);
 
 	// UI state
 	selectedDate = $state<string>(getTodayISO());
@@ -122,6 +129,30 @@ class HealthStore {
 		return this.calculateCycleStats();
 	}
 
+	// Derived: visible tiles sorted by order
+	get visibleTiles(): TileConfig[] {
+		return [...this.tileConfig]
+			.filter(t => t.visible)
+			.sort((a, b) => a.order - b.order);
+	}
+
+	// Derived: all tiles sorted by order (for settings)
+	get sortedTiles(): TileConfig[] {
+		return [...this.tileConfig].sort((a, b) => a.order - b.order);
+	}
+
+	// Derived: visible stats tiles sorted by order
+	get visibleStatsTiles(): StatsTileConfig[] {
+		return [...this.statsTileConfig]
+			.filter(t => t.visible)
+			.sort((a, b) => a.order - b.order);
+	}
+
+	// Derived: all stats tiles sorted by order (for settings)
+	get sortedStatsTiles(): StatsTileConfig[] {
+		return [...this.statsTileConfig].sort((a, b) => a.order - b.order);
+	}
+
 	/**
 	 * Initialize the store
 	 * 初始化狀態
@@ -161,6 +192,8 @@ class HealthStore {
 		this.periodEntries = periods;
 		this.customSymptoms = symptoms;
 		this.customName = settings?.customName;
+		this.tileConfig = settings?.tileConfig ?? [...DEFAULT_TILE_ORDER];
+		this.statsTileConfig = settings?.statsTileConfig ?? [...DEFAULT_STATS_TILE_ORDER];
 	}
 
 	/**
@@ -213,6 +246,118 @@ class HealthStore {
 	 */
 	async clearCustomName(): Promise<void> {
 		await this.setCustomName(undefined);
+	}
+
+	/**
+	 * Update tile configuration (order and visibility)
+	 * 更新磁貼配置（順序同可見性）
+	 */
+	async setTileConfig(config: TileConfig[]): Promise<void> {
+		// Clone the array to ensure it's not a Svelte proxy
+		const plainConfig = config.map(t => ({ ...t }));
+		this.tileConfig = plainConfig;
+
+		const now = new Date();
+		const settings = await db.settings.get('settings');
+
+		// Use put instead of update to ensure the entire object is saved
+		await db.settings.put({
+			id: 'settings',
+			language: settings?.language ?? 'en',
+			theme: settings?.theme ?? 'light',
+			customName: settings?.customName,
+			tileConfig: plainConfig,
+			statsTileConfig: settings?.statsTileConfig ?? [...DEFAULT_STATS_TILE_ORDER],
+			createdAt: settings?.createdAt ?? now,
+			updatedAt: now
+		});
+	}
+
+	/**
+	 * Toggle tile visibility
+	 * 切換磁貼可見性
+	 */
+	async toggleTileVisibility(tileId: TileId): Promise<void> {
+		const newConfig = this.tileConfig.map(t =>
+			t.id === tileId ? { ...t, visible: !t.visible } : t
+		);
+		await this.setTileConfig(newConfig);
+	}
+
+	/**
+	 * Reorder tiles
+	 * 重新排序磁貼
+	 */
+	async reorderTiles(newOrder: TileId[]): Promise<void> {
+		const newConfig = newOrder.map((id, index) => {
+			const existing = this.tileConfig.find(t => t.id === id);
+			return existing ? { ...existing, order: index } : { id, visible: true, order: index };
+		});
+		await this.setTileConfig(newConfig);
+	}
+
+	/**
+	 * Reset tile configuration to defaults
+	 * 重設磁貼配置為預設值
+	 */
+	async resetTileConfig(): Promise<void> {
+		await this.setTileConfig([...DEFAULT_TILE_ORDER]);
+	}
+
+	/**
+	 * Set stats tile configuration
+	 * 設定統計磁貼配置
+	 */
+	async setStatsTileConfig(config: StatsTileConfig[]): Promise<void> {
+		// Clone the array to ensure it's not a Svelte proxy
+		const plainConfig = config.map(t => ({ ...t }));
+		this.statsTileConfig = plainConfig;
+
+		const now = new Date();
+		const settings = await db.settings.get('settings');
+
+		// Use put to ensure the entire object is saved
+		await db.settings.put({
+			id: 'settings',
+			language: settings?.language ?? 'en',
+			theme: settings?.theme ?? 'light',
+			customName: settings?.customName,
+			tileConfig: settings?.tileConfig ?? [...DEFAULT_TILE_ORDER],
+			statsTileConfig: plainConfig,
+			createdAt: settings?.createdAt ?? now,
+			updatedAt: now
+		});
+	}
+
+	/**
+	 * Toggle stats tile visibility
+	 * 切換統計磁貼可見性
+	 */
+	async toggleStatsTileVisibility(tileId: StatsTileId): Promise<void> {
+		const newConfig = this.statsTileConfig.map(t =>
+			t.id === tileId ? { ...t, visible: !t.visible } : t
+		);
+		await this.setStatsTileConfig(newConfig);
+	}
+
+	/**
+	 * Reorder stats tiles
+	 * 重新排序統計磁貼
+	 */
+	async reorderStatsTiles(newOrder: StatsTileId[]): Promise<void> {
+		const newConfig = newOrder.map((id, index) => {
+			const existing = this.statsTileConfig.find(t => t.id === id);
+			return existing ? { ...existing, order: index } : { id, visible: true, order: index };
+		});
+		await this.setStatsTileConfig(newConfig);
+	}
+
+	/**
+	 * Reset stats tile configuration to defaults
+	 * 重設統計磁貼配置為預設值
+	 */
+	async resetStatsTileConfig(): Promise<void> {
+		await this.setStatsTileConfig([...DEFAULT_STATS_TILE_ORDER]);
 	}
 
 	/**
