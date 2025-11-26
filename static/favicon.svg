@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7ba888"/>
+      <stop offset="100%" style="stop-color:#5a8a6a"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="url(#bg)"/>
+
+  <!-- Heart with pulse line -->
+  <g fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+    <!-- Heart shape -->
+    <path d="M50 75 C30 55, 20 45, 25 35 C30 25, 40 25, 50 35 C60 25, 70 25, 75 35 C80 45, 70 55, 50 75" fill="rgba(255,255,255,0.2)"/>
+
+    <!-- Pulse line -->
+    <path d="M25 50 L40 50 L45 40 L50 60 L55 45 L60 50 L75 50"/>
+  </g>
+
+  <!-- Small plus sign -->
+  <g fill="#fff" opacity="0.9">
+    <rect x="78" y="18" width="10" height="3" rx="1"/>
+    <rect x="81.5" y="14.5" width="3" height="10" rx="1"/>
+  </g>
+</svg>

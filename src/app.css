@@ -1,0 +1,420 @@
+@import 'tailwindcss';
+
+/* ═══════════════════════════════════════════════════════════════
+   Health Tracker 健康追蹤 - Custom Theme
+   Hong Kong Inspired, Calming Color Palette
+   ═══════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* ─── Jade Green (Primary) 翡翠綠 ─── */
+  --color-jade-50: #f0f7f2;
+  --color-jade-100: #d9ebe0;
+  --color-jade-200: #b3d7c1;
+  --color-jade-300: #8dc3a2;
+  --color-jade-400: #7ba888;
+  --color-jade-500: #5a8a6a;
+  --color-jade-600: #476e54;
+  --color-jade-700: #385544;
+  --color-jade-800: #2a3f33;
+  --color-jade-900: #1c2a22;
+
+  /* ─── Coral (Secondary) 珊瑚 ─── */
+  --color-coral-50: #fdf5f0;
+  --color-coral-100: #fae8dc;
+  --color-coral-200: #f5d1b9;
+  --color-coral-300: #e8a87c;
+  --color-coral-400: #db8a5c;
+  --color-coral-500: #c4714a;
+  --color-coral-600: #a55a3b;
+  --color-coral-700: #86472f;
+  --color-coral-800: #673624;
+  --color-coral-900: #48261a;
+
+  /* ─── Gold (Accent) 金色 ─── */
+  --color-gold-50: #fdfaed;
+  --color-gold-100: #f9f0c8;
+  --color-gold-200: #f0dc8a;
+  --color-gold-300: #e6c84d;
+  --color-gold-400: #d4af37;
+  --color-gold-500: #b8952e;
+  --color-gold-600: #967725;
+  --color-gold-700: #745a1d;
+  --color-gold-800: #524015;
+  --color-gold-900: #30260d;
+
+  /* ─── Cream (Background) 米白 ─── */
+  --color-cream-50: #fffefb;
+  --color-cream-100: #fdf8f3;
+  --color-cream-200: #f7efe5;
+  --color-cream-300: #f0e4d7;
+  --color-cream-400: #e5d5c3;
+
+  /* ─── Charcoal (Text) 炭灰 ─── */
+  --color-charcoal-50: #f5f5f5;
+  --color-charcoal-100: #e0e0e0;
+  --color-charcoal-200: #b0b0b0;
+  --color-charcoal-300: #808080;
+  --color-charcoal-400: #606060;
+  --color-charcoal-500: #404040;
+  --color-charcoal-600: #2d3436;
+  --color-charcoal-700: #1a1a1a;
+
+  /* ─── Semantic Colors ─── */
+  --color-severity-mild: #7ba888;
+  --color-severity-moderate: #e8a87c;
+  --color-severity-severe: #c44536;
+
+  /* ─── Font Family ─── */
+  --font-sans: 'Noto Sans HK', 'Noto Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Base Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+html {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-cream-100);
+  color: var(--color-charcoal-600);
+  min-height: 100vh;
+}
+
+/* Mobile viewport fix */
+@supports (height: 100dvh) {
+  body {
+    min-height: 100dvh;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Hong Kong Inspired Effects 香港風格效果
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Neon Glow Effect 霓虹光效 */
+.neon-glow {
+  text-shadow:
+    0 0 5px rgba(123, 168, 136, 0.5),
+    0 0 10px rgba(123, 168, 136, 0.3),
+    0 0 20px rgba(123, 168, 136, 0.2);
+}
+
+.neon-glow-coral {
+  text-shadow:
+    0 0 5px rgba(232, 168, 124, 0.5),
+    0 0 10px rgba(232, 168, 124, 0.3),
+    0 0 20px rgba(232, 168, 124, 0.2);
+}
+
+.neon-border {
+  box-shadow:
+    0 0 5px rgba(123, 168, 136, 0.3),
+    inset 0 0 5px rgba(123, 168, 136, 0.1);
+}
+
+/* Chinese Lattice Pattern 中式格仔圖案 */
+.lattice-pattern {
+  background-image:
+    linear-gradient(135deg, rgba(123, 168, 136, 0.05) 25%, transparent 25%),
+    linear-gradient(225deg, rgba(123, 168, 136, 0.05) 25%, transparent 25%),
+    linear-gradient(45deg, rgba(123, 168, 136, 0.05) 25%, transparent 25%),
+    linear-gradient(315deg, rgba(123, 168, 136, 0.05) 25%, transparent 25%);
+  background-size: 20px 20px;
+}
+
+/* Gold Decorative Divider 金色分隔線 */
+.divider-gold {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--color-charcoal-400);
+  font-size: 0.875rem;
+}
+
+.divider-gold::before,
+.divider-gold::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-gold-400), transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Card Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+.card {
+  background-color: white;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-jade-200);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.card-hover {
+  transition: all 0.2s;
+}
+
+.card-hover:hover {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  border-color: var(--color-jade-300);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Button Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+.btn-primary {
+  background-color: var(--color-jade-400);
+  color: white;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-jade-500);
+}
+
+.btn-primary:active {
+  background-color: var(--color-jade-600);
+}
+
+.btn-primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px white, 0 0 0 4px var(--color-jade-300);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-coral-400);
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  border: 2px solid var(--color-coral-300);
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-coral-50);
+}
+
+.btn-secondary:active {
+  background-color: var(--color-coral-100);
+}
+
+.btn-secondary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px white, 0 0 0 4px var(--color-coral-200);
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: var(--color-charcoal-500);
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.btn-ghost:hover {
+  background-color: var(--color-charcoal-50);
+}
+
+.btn-ghost:active {
+  background-color: var(--color-charcoal-100);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Form Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-charcoal-200);
+  background-color: white;
+  color: var(--color-charcoal-600);
+  transition: all 0.2s;
+}
+
+.input::placeholder {
+  color: var(--color-charcoal-300);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-jade-400);
+  box-shadow: 0 0 0 3px rgba(123, 168, 136, 0.2);
+}
+
+.textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-charcoal-200);
+  background-color: white;
+  color: var(--color-charcoal-600);
+  transition: all 0.2s;
+  resize: none;
+}
+
+.textarea::placeholder {
+  color: var(--color-charcoal-300);
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-jade-400);
+  box-shadow: 0 0 0 3px rgba(123, 168, 136, 0.2);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Trigger Chip Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+.trigger-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-charcoal-200);
+  background-color: var(--color-cream-50);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.trigger-chip:hover {
+  border-color: var(--color-jade-300);
+  background-color: var(--color-jade-50);
+}
+
+.trigger-chip-selected {
+  border: 2px solid var(--color-jade-400);
+  background-color: var(--color-jade-100);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Severity Indicator
+   ═══════════════════════════════════════════════════════════════ */
+
+.severity-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 9999px;
+}
+
+.severity-1 { background-color: var(--color-jade-400); }
+.severity-2 { background-color: var(--color-jade-300); }
+.severity-3 { background-color: var(--color-gold-400); }
+.severity-4 { background-color: var(--color-coral-400); }
+.severity-5 { background-color: #ef4444; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Navigation
+   ═══════════════════════════════════════════════════════════════ */
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  color: var(--color-charcoal-400);
+  transition: color 0.2s;
+}
+
+.nav-item-active {
+  color: var(--color-jade-500);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Animations
+   ═══════════════════════════════════════════════════════════════ */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-bottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+.animate-slide-in-bottom {
+  animation: slide-in-bottom 0.3s ease-out;
+}
+
+/* Staggered animation delays */
+.stagger-1 { animation-delay: 50ms; }
+.stagger-2 { animation-delay: 100ms; }
+.stagger-3 { animation-delay: 150ms; }
+.stagger-4 { animation-delay: 200ms; }
+.stagger-5 { animation-delay: 250ms; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Safe Area (for mobile notches)
+   ═══════════════════════════════════════════════════════════════ */
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Scrollbar Styling
+   ═══════════════════════════════════════════════════════════════ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--color-cream-200);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-jade-300);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-jade-400);
+}
