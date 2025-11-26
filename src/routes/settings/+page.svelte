@@ -6,6 +6,7 @@
 	import { db, resetDatabase } from '$lib/db/database';
 	import {
 		LanguageSelector,
+		PersonalizationSection,
 		ToggleListSection,
 		DataManagement,
 		EditItemModal,
@@ -192,6 +193,9 @@
 
 	<!-- Language -->
 	<LanguageSelector onSelectLanguage={setLanguage} />
+
+	<!-- Personalization (Easter Egg) -->
+	<PersonalizationSection />
 
 	<!-- Ailment Types -->
 	<ToggleListSection

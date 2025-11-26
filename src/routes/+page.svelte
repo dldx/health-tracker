@@ -49,16 +49,35 @@
 	const entries = $derived(healthStore.selectedDateEntriesWithDetails);
 	const currentMood = $derived(healthStore.selectedDateCheckIn?.mood);
 	const currentPeriod = $derived(healthStore.selectedDatePeriod);
+
+	// Dynamic title based on custom name
+	const pageTitle = $derived.by(() => {
+		if (healthStore.customName) {
+			return i18n.locale === 'en'
+				? `${healthStore.customName}'s Tracker`
+				: `${healthStore.customName} 嘅追蹤`;
+		}
+		return i18n.t.dayView.title;
+	});
+
+	const pageSubtitle = $derived.by(() => {
+		if (healthStore.customName) {
+			return i18n.locale === 'en'
+				? 'Health Tracker'
+				: '健康追蹤';
+		}
+		return i18n.t.dayView.subtitle;
+	});
 </script>
 
 <main class="space-y-4 mx-auto px-4 py-6 max-w-md">
 	<!-- Header -->
 	<header class="mb-6 text-center">
 		<h1 class="font-bold text-jade-600 text-2xl neon-glow">
-			{i18n.t.dayView.title}
+			{pageTitle}
 		</h1>
 		<p class="text-charcoal-400 text-sm">
-			{i18n.t.dayView.subtitle}
+			{pageSubtitle}
 		</p>
 	</header>
 

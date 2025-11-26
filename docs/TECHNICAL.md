@@ -533,7 +533,7 @@ export const platform = Capacitor.getPlatform(); // 'web' | 'android' | 'ios'
 ## 📁 File Structure 檔案結構
 
 ```
-eliza-health-tracker/
+health-tracker/
 ├── src/
 │   ├── lib/
 │   │   ├── components/

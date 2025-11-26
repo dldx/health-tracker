@@ -105,7 +105,7 @@ This app draws inspiration from Hong Kong's unique visual culture:
 ```bash
 # Clone the repository 複製儲存庫
 git clone <repository-url>
-cd eliza-health-tracker
+cd health-tracker
 
 # Install dependencies 安裝依賴
 bun install
@@ -122,6 +122,19 @@ The app will be available at `http://localhost:5173`
 bun run build
 bun run preview
 ```
+
+### Deploying to GitHub Pages 部署到 GitHub Pages
+
+The app can be deployed to GitHub Pages with automatic CI/CD:
+
+```bash
+# Push to main branch will trigger automatic deployment
+git push origin main
+```
+
+See [Deployment Guide](docs/DEPLOYMENT.md) for detailed instructions.
+
+查閱 [部署指南](docs/DEPLOYMENT.md) 了解詳細步驟。
 
 ### Building for Android 建置 Android 版本
 
@@ -199,6 +212,8 @@ The Chinese interface uses Traditional Chinese characters with Cantonese express
 ## 📚 Documentation 文件
 
 - [Features Guide](docs/FEATURES.md) - Complete feature documentation **NEW**
+- [Deployment Guide](docs/DEPLOYMENT.md) - GitHub Pages deployment **NEW**
+- [PWA Guide](docs/PWA_GUIDE.md) - Progressive Web App features
 - [Design System](docs/DESIGN.md) - Colors, typography, components
 - [Technical Architecture](docs/TECHNICAL.md) - Data models, database schema
 - [Cantonese Guide](docs/CANTONESE.md) - Language guidelines

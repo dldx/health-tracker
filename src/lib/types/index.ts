@@ -174,6 +174,7 @@ export interface AppSettings {
 	id: string; // Always 'settings' (singleton)
 	language: Language;
 	theme: Theme;
+	customName?: string; // Easter egg: personalize the app title (e.g., "Eliza's Health Tracker")
 	createdAt: Date;
 	updatedAt: Date;
 }

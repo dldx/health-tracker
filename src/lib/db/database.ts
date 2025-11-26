@@ -243,6 +243,7 @@ export async function seedDefaultData(): Promise<void> {
 		id: 'settings',
 		language: 'en',
 		theme: 'light',
+		customName: undefined,
 		createdAt: now,
 		updatedAt: now
 	};

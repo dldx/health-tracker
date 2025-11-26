@@ -1,5 +1,5 @@
 {
-	"name": "eliza-health-tracker",
+	"name": "health-tracker",
 	"private": true,
 	"version": "1.0.0",
 	"description": "A privacy-first health tracking app for monitoring ailments and triggers. 健康追蹤應用程式。",
@@ -11,6 +11,7 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"generate:icons": "node scripts/generate-icons.js",
 		"cap:init": "cap init 'Health Tracker' com.healthtracker.app --web-dir build",
 		"cap:android": "cap add android",
 		"cap:sync": "cap sync",
@@ -19,9 +20,11 @@
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^7.0.0",
+		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.48.5",
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
 		"@tailwindcss/vite": "^4.1.17",
+		"sharp": "^0.34.5",
 		"svelte": "^5.43.8",
 		"svelte-check": "^4.3.4",
 		"tailwindcss": "^4.1.17",

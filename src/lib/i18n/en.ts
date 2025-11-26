@@ -169,7 +169,14 @@ export const en = {
 		deleteWarning: 'This action cannot be undone.',
 		customOnly: 'Only custom items can be edited or deleted',
 		updated: 'Updated successfully',
-		deleted: 'Deleted successfully'
+		deleted: 'Deleted successfully',
+		personalization: 'Personalization',
+		customName: 'Your Name',
+		customNamePlaceholder: 'e.g., Eliza',
+		customNameHint: 'Personalize your app title',
+		customNameSaved: 'Name saved!',
+		customNameCleared: 'Name cleared',
+		appTitleWithName: "{name}'s Health Tracker"
 	},
 
 	calendar: {

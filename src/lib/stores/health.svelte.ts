@@ -16,7 +16,8 @@ import type {
 	PeriodSymptom,
 	CustomPeriodSymptom,
 	HealthEntryWithDetails,
-	CycleStats
+	CycleStats,
+	AppSettings
 } from '$lib/types';
 import { getTodayISO, addDays } from '$lib/utils/date';
 import { generateUUID } from '$lib/utils/uuid';
@@ -33,6 +34,7 @@ class HealthStore {
 	dailyCheckIns = $state<DailyCheckIn[]>([]);
 	periodEntries = $state<PeriodEntry[]>([]);
 	customSymptoms = $state<CustomPeriodSymptom[]>([]);
+	customName = $state<string | undefined>(undefined);
 
 	// UI state
 	selectedDate = $state<string>(getTodayISO());
@@ -142,13 +144,14 @@ class HealthStore {
 	 * 從資料庫載入所有資料
 	 */
 	async loadAllData(): Promise<void> {
-		const [ailments, triggers, entries, checkIns, periods, symptoms] = await Promise.all([
+		const [ailments, triggers, entries, checkIns, periods, symptoms, settings] = await Promise.all([
 			db.ailmentTypes.toArray(),
 			db.triggerTypes.toArray(),
 			db.healthEntries.toArray(),
 			db.dailyCheckIns.toArray(),
 			db.periodEntries.toArray(),
-			db.customSymptoms.toArray()
+			db.customSymptoms.toArray(),
+			db.settings.get('settings')
 		]);
 
 		this.ailmentTypes = ailments;
@@ -157,6 +160,59 @@ class HealthStore {
 		this.dailyCheckIns = checkIns;
 		this.periodEntries = periods;
 		this.customSymptoms = symptoms;
+		this.customName = settings?.customName;
+	}
+
+	/**
+	 * Check URL for custom name parameter and save it
+	 * 檢查URL嘅自訂名稱參數並儲存
+	 */
+	async checkUrlForCustomName(): Promise<void> {
+		if (typeof window === 'undefined') return;
+
+		const urlParams = new URLSearchParams(window.location.search);
+		const nameFromUrl = urlParams.get('name');
+
+		if (nameFromUrl && nameFromUrl.trim()) {
+			await this.setCustomName(nameFromUrl.trim());
+			// Clean up URL without reloading
+			const newUrl = window.location.pathname + window.location.hash;
+			window.history.replaceState({}, '', newUrl);
+		}
+	}
+
+	/**
+	 * Set custom name (easter egg personalization)
+	 * 設定自訂名稱（彩蛋個人化功能）
+	 */
+	async setCustomName(name: string | undefined): Promise<void> {
+		const trimmedName = name?.trim() || undefined;
+		this.customName = trimmedName;
+
+		const now = new Date();
+		const settings = await db.settings.get('settings');
+
+		if (settings) {
+			await db.settings.update('settings', { customName: trimmedName, updatedAt: now });
+		} else {
+			const newSettings: AppSettings = {
+				id: 'settings',
+				language: 'en',
+				theme: 'light',
+				customName: trimmedName,
+				createdAt: now,
+				updatedAt: now
+			};
+			await db.settings.put(newSettings);
+		}
+	}
+
+	/**
+	 * Clear custom name
+	 * 清除自訂名稱
+	 */
+	async clearCustomName(): Promise<void> {
+		await this.setCustomName(undefined);
 	}
 
 	/**

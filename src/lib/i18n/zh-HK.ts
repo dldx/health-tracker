@@ -172,7 +172,14 @@ export const zhHK: Translations = {
 		deleteWarning: '呢個動作冇得撤銷。',
 		customOnly: '只有自訂項目可以編輯或刪除',
 		updated: '更新成功',
-		deleted: '刪除成功'
+		deleted: '刪除成功',
+		personalization: '個人化',
+		customName: '你嘅名',
+		customNamePlaceholder: '例如：小明',
+		customNameHint: '自訂你嘅應用程式標題',
+		customNameSaved: '名稱已儲存！',
+		customNameCleared: '名稱已清除',
+		appTitleWithName: '{name} 嘅健康追蹤'
 	},
 
 	calendar: {

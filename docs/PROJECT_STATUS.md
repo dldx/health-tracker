@@ -127,7 +127,7 @@
 ## 🏗️ Current File Structure 目前檔案結構
 
 ```
-eliza-health-tracker/
+health-tracker/
 ├── docs/
 │   ├── CANTONESE.md          # Cantonese language guide
 │   ├── DESIGN.md             # Design system
