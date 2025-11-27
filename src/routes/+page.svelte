@@ -1,20 +1,36 @@
 <script lang="ts">
-	import { DragDropProvider, DragOverlay, KeyboardSensor, PointerSensor } from '@dnd-kit-svelte/svelte';
-	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
-	import { move } from '@dnd-kit/helpers';
-	import { Settings2, GripVertical, Check, Eye, EyeOff } from 'lucide-svelte';
-	import { i18n } from '$lib/i18n';
-	import { healthStore } from '$lib/stores/health.svelte';
-	import DayPicker from '$lib/components/DayPicker.svelte';
-	import MoodSelector from '$lib/components/MoodSelector.svelte';
-	import AilmentSelector from '$lib/components/AilmentSelector.svelte';
-	import LogAilmentSheet from '$lib/components/LogAilmentSheet.svelte';
-	import PeriodLogger from '$lib/components/PeriodLogger.svelte';
-	import { PeriodTrackerButton, TodayEntriesSection } from '$lib/components/today';
-	import type { AilmentType, MoodLevel, TileConfig, TileId } from '$lib/types';
+	import {
+		DragDropProvider,
+		DragOverlay,
+		KeyboardSensor,
+		PointerSensor,
+	} from "@dnd-kit-svelte/svelte";
+	import { useSortable } from "@dnd-kit-svelte/svelte/sortable";
+	import { move } from "@dnd-kit/helpers";
+	import { Settings2, GripVertical, Check, Eye, EyeOff } from "lucide-svelte";
+	import { i18n } from "$lib/i18n";
+	import { healthStore } from "$lib/stores/health.svelte";
+	import DayPicker from "$lib/components/DayPicker.svelte";
+	import MoodSelector from "$lib/components/MoodSelector.svelte";
+	import AilmentSelector from "$lib/components/AilmentSelector.svelte";
+	import LogAilmentSheet from "$lib/components/LogAilmentSheet.svelte";
+	import PeriodLogger from "$lib/components/PeriodLogger.svelte";
+	import {
+		PeriodTrackerButton,
+		TodayEntriesSection,
+	} from "$lib/components/today";
+	import type {
+		AilmentType,
+		MoodLevel,
+		TileConfig,
+		TileId,
+		HealthEntry,
+		HealthEntryWithDetails,
+	} from "$lib/types";
 
 	// Sheet state
 	let selectedAilment = $state<AilmentType | null>(null);
+	let editingEntry = $state<HealthEntry | undefined>(undefined);
 	let showSheet = $state(false);
 	let showPeriodSheet = $state(false);
 	let isEditMode = $state(false);
@@ -43,17 +59,27 @@
 	function handleAilmentSelect(ailment: AilmentType) {
 		if (isEditMode) return;
 		selectedAilment = ailment;
+		editingEntry = undefined;
+		showSheet = true;
+	}
+
+	function handleEditEntry(entry: HealthEntryWithDetails) {
+		if (isEditMode) return;
+		selectedAilment = entry.ailmentType;
+		editingEntry = entry;
 		showSheet = true;
 	}
 
 	function handleSheetClose() {
 		showSheet = false;
 		selectedAilment = null;
+		editingEntry = undefined;
 	}
 
 	function handleEntrySaved() {
 		showSheet = false;
 		selectedAilment = null;
+		editingEntry = undefined;
 	}
 
 	function handlePeriodSheetClose() {
@@ -88,7 +114,7 @@
 		if (event.canceled) return;
 
 		// In edit mode, localTiles already contains all tiles
-		const newOrder = localTiles.map(t => t.id);
+		const newOrder = localTiles.map((t) => t.id);
 		await healthStore.reorderTiles(newOrder);
 	}
 
@@ -104,7 +130,7 @@
 	// Dynamic title based on custom name
 	const pageTitle = $derived.by(() => {
 		if (healthStore.customName) {
-			return i18n.locale === 'en'
+			return i18n.locale === "en"
 				? `${healthStore.customName}'s Health Tracker`
 				: `${healthStore.customName} 嘅健康追蹤`;
 		}
@@ -113,9 +139,7 @@
 
 	const pageSubtitle = $derived.by(() => {
 		if (healthStore.customName) {
-			return i18n.locale === 'en'
-				? 'Track your health'
-				: '追蹤你嘅健康';
+			return i18n.locale === "en" ? "Track your health" : "追蹤你嘅健康";
 		}
 		return i18n.t.dayView.subtitle;
 	});
@@ -134,9 +158,9 @@
 	{@const sortable = useSortable({
 		id: tile.id,
 		index: () => index,
-		group: 'home-tiles',
+		group: "home-tiles",
 		data: () => ({ tile, index }),
-		disabled: () => !isEditMode
+		disabled: () => !isEditMode,
 	})}
 	<div
 		{@attach sortable.ref}
@@ -148,7 +172,9 @@
 	>
 		{#if isEditMode}
 			<!-- Controls on the left -->
-			<div class="top-1/2 left-1 z-10 absolute flex flex-col gap-1 -translate-y-1/2">
+			<div
+				class="top-1/2 left-1 z-10 absolute flex flex-col gap-1 -translate-y-1/2"
+			>
 				<button
 					{@attach sortable.handleRef}
 					type="button"
@@ -167,7 +193,7 @@
 					class:bg-charcoal-100={!tile.visible}
 					class:border-charcoal-200={!tile.visible}
 					class:hover:bg-charcoal-200={!tile.visible}
-					aria-label={tile.visible ? 'Hide tile' : 'Show tile'}
+					aria-label={tile.visible ? "Hide tile" : "Show tile"}
 				>
 					{#if tile.visible}
 						<Eye class="w-4 h-4 text-jade-600" />
@@ -184,36 +210,44 @@
 			class:opacity-40={isEditMode && !tile.visible}
 			class:grayscale={isEditMode && !tile.visible}
 		>
-			{#if tile.id === 'dayPicker'}
+			{#if tile.id === "dayPicker"}
 				<DayPicker
 					selectedDate={healthStore.selectedDate}
-					onDateChange={(date) => !isEditMode && healthStore.setSelectedDate(date)}
+					onDateChange={(date) =>
+						!isEditMode && healthStore.setSelectedDate(date)}
 				/>
-			{:else if tile.id === 'mood'}
+			{:else if tile.id === "mood"}
 				<MoodSelector
 					selected={currentMood}
+					date={healthStore.selectedDate}
 					onSelect={handleMoodSelect}
 				/>
-			{:else if tile.id === 'period'}
+			{:else if tile.id === "period"}
 				<PeriodTrackerButton
-					currentPeriod={currentPeriod}
+					{currentPeriod}
 					onClick={handlePeriodClick}
 				/>
-			{:else if tile.id === 'ailments'}
+			{:else if tile.id === "ailments"}
 				<AilmentSelector
 					ailmentTypes={healthStore.activeAilmentTypes}
 					onSelect={handleAilmentSelect}
 				/>
-			{:else if tile.id === 'entries'}
+			{:else if tile.id === "entries"}
 				{#if isEditMode}
 					<!-- Collapsed view in edit mode -->
 					<div class="p-4 text-center card">
-						<div class="font-medium text-charcoal-500">{i18n.t.tiles.names.entries}</div>
-						<div class="text-charcoal-400 text-sm">{entries.length} {entries.length === 1 ? 'entry' : 'entries'}</div>
+						<div class="font-medium text-charcoal-500">
+							{i18n.t.tiles.names.entries}
+						</div>
+						<div class="text-charcoal-400 text-sm">
+							{entries.length}
+							{entries.length === 1 ? "entry" : "entries"}
+						</div>
 					</div>
 				{:else}
 					<TodayEntriesSection
 						{entries}
+						onEdit={handleEditEntry}
 						onDelete={handleDeleteEntry}
 					/>
 				{/if}
@@ -243,7 +277,9 @@
 			class:text-charcoal-400={!isEditMode}
 			class:hover:bg-charcoal-100={!isEditMode}
 			class:hover:text-charcoal-600={!isEditMode}
-			title={isEditMode ? i18n.t.tiles.doneEditing : i18n.t.tiles.editMode}
+			title={isEditMode
+				? i18n.t.tiles.doneEditing
+				: i18n.t.tiles.editMode}
 		>
 			{#if isEditMode}
 				<Check class="w-5 h-5" />
@@ -254,50 +290,55 @@
 	</header>
 
 	{#if isEditMode}
-		<div class="bg-jade-50 px-4 py-2 border border-jade-100 rounded-lg text-charcoal-400 text-sm text-center">
+		<div
+			class="bg-jade-50 px-4 py-2 border border-jade-100 rounded-lg text-charcoal-400 text-sm text-center"
+		>
 			{i18n.t.tiles.dragHint}
 		</div>
 	{/if}
 
 	<DragDropProvider
-			sensors={[KeyboardSensor, PointerSensor]}
-			onDragOver={handleDragOver}
-			onDragEnd={handleDragEnd}
-		>
-			<div class="space-y-4 overflow-visible">
-				{#each localTiles as tile, index (tile.id)}
-					{@render SortableTileWrapper({ tile, index })}
-				{/each}
-			</div>
+		sensors={[KeyboardSensor, PointerSensor]}
+		onDragOver={handleDragOver}
+		onDragEnd={handleDragEnd}
+	>
+		<div class="space-y-4 overflow-visible">
+			{#each localTiles as tile, index (tile.id)}
+				{@render SortableTileWrapper({ tile, index })}
+			{/each}
+		</div>
 
 		<DragOverlay>
 			{#snippet children(source)}
-				{@const tile = localTiles.find(t => t.id === source.id)}
+				{@const tile = localTiles.find((t) => t.id === source.id)}
 				{#if tile}
-					<div class="opacity-95 max-w-md rotate-1 scale-[1.02] pointer-events-none">
-						{#if tile.id === 'dayPicker'}
+					<div
+						class="opacity-95 max-w-md rotate-1 scale-[1.02] pointer-events-none"
+					>
+						{#if tile.id === "dayPicker"}
 							<DayPicker
 								selectedDate={healthStore.selectedDate}
 								onDateChange={() => {}}
 							/>
-						{:else if tile.id === 'mood'}
+						{:else if tile.id === "mood"}
 							<MoodSelector
 								selected={currentMood}
 								onSelect={() => {}}
 							/>
-						{:else if tile.id === 'period'}
+						{:else if tile.id === "period"}
 							<PeriodTrackerButton
-								currentPeriod={currentPeriod}
+								{currentPeriod}
 								onClick={() => {}}
 							/>
-						{:else if tile.id === 'ailments'}
+						{:else if tile.id === "ailments"}
 							<AilmentSelector
 								ailmentTypes={healthStore.activeAilmentTypes}
 								onSelect={() => {}}
 							/>
-						{:else if tile.id === 'entries'}
+						{:else if tile.id === "entries"}
 							<TodayEntriesSection
 								{entries}
+								onEdit={() => {}}
 								onDelete={async () => {}}
 							/>
 						{/if}
@@ -312,9 +353,14 @@
 {#if showSheet && selectedAilment}
 	<LogAilmentSheet
 		ailment={selectedAilment}
-		date={healthStore.selectedDate}
+		date={editingEntry?.date ?? healthStore.selectedDate}
+		existingEntry={editingEntry}
 		onClose={handleSheetClose}
 		onSaved={handleEntrySaved}
+		onDelete={async (id) => {
+			await handleDeleteEntry(id);
+			handleSheetClose();
+		}}
 	/>
 {/if}
 
@@ -327,4 +373,3 @@
 		onSaved={handlePeriodSaved}
 	/>
 {/if}
-

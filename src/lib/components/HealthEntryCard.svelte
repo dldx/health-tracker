@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { Trash2 } from 'lucide-svelte';
+	import { Pencil } from 'lucide-svelte';
 	import { i18n } from '$lib/i18n';
 	import { formatTime } from '$lib/utils/date';
 	import { cn } from '$lib/utils/cn';
@@ -8,10 +8,11 @@
 
 	interface Props {
 		entry: HealthEntryWithDetails;
+		onEdit?: (entry: HealthEntryWithDetails) => void;
 		onDelete?: (id: string) => void;
 	}
 
-	let { entry, onDelete }: Props = $props();
+	let { entry, onEdit, onDelete }: Props = $props();
 
 	const severityLabels: Record<Severity, string> = {
 		1: i18n.t.severity.level1,
@@ -51,14 +52,14 @@
 					</p>
 				</div>
 
-				{#if onDelete}
+				{#if onEdit}
 					<button
 						type="button"
-						onclick={() => onDelete(entry.id)}
-						class="hover:bg-coral-50 p-2 rounded-lg text-charcoal-400 hover:text-coral-500 transition-colors"
-						aria-label="Delete entry"
+						onclick={() => onEdit(entry)}
+						class="hover:bg-jade-50 p-2 rounded-lg text-charcoal-400 hover:text-jade-500 transition-colors"
+						aria-label="Edit entry"
 					>
-						<Trash2 class="w-4 h-4" />
+						<Pencil class="w-4 h-4" />
 					</button>
 				{/if}
 			</div>

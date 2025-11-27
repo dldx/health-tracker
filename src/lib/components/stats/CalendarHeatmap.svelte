@@ -1,23 +1,45 @@
 <script lang="ts">
-	import { i18n } from '$lib/i18n';
-	import { cn } from '$lib/utils/cn';
+	import { i18n } from "$lib/i18n";
+	import { cn } from "$lib/utils/cn";
+	import { goto } from "$app/navigation";
+	import { healthStore } from "$lib/stores/health.svelte";
+	import type { MoodLevel } from "$lib/types";
 
 	interface Props {
 		monthDates: string[];
 		entriesByDate: Record<string, number>;
 		maxSeverityByDate: Record<string, number>;
+		moodByDate: Record<string, MoodLevel>;
 		periodDates: Set<string>;
 		firstDayOffset: number;
 	}
 
-	let { monthDates, entriesByDate, maxSeverityByDate, periodDates, firstDayOffset }: Props = $props();
+	let {
+		monthDates,
+		entriesByDate,
+		maxSeverityByDate,
+		moodByDate,
+		periodDates,
+		firstDayOffset,
+	}: Props = $props();
+
+	const moodEmojis: Record<MoodLevel, string> = {
+		good: "😊",
+		okay: "😐",
+		bad: "😣",
+	};
 
 	function getDayColor(date: string): string {
 		const severity = maxSeverityByDate[date];
-		if (!severity) return 'bg-cream-200';
-		if (severity <= 2) return 'bg-jade-300';
-		if (severity <= 3) return 'bg-gold-300';
-		return 'bg-coral-400';
+		if (!severity) return "bg-cream-200";
+		if (severity <= 2) return "bg-jade-300";
+		if (severity <= 3) return "bg-gold-300";
+		return "bg-coral-400";
+	}
+
+	function handleDayClick(date: string) {
+		healthStore.setSelectedDate(date);
+		goto("/");
 	}
 </script>
 
@@ -28,7 +50,7 @@
 
 	<!-- Weekday headers -->
 	<div class="gap-1 grid grid-cols-7 mb-2">
-		{#each ['S', 'M', 'T', 'W', 'T', 'F', 'S'] as day}
+		{#each ["M", "T", "W", "T", "F", "S", "S"] as day}
 			<div class="font-medium text-charcoal-400 text-xs text-center">
 				{day}
 			</div>
@@ -44,23 +66,43 @@
 
 		<!-- Date cells -->
 		{#each monthDates as date}
-			{@const dayNum = new Date(date + 'T00:00:00').getDate()}
+			{@const dayNum = new Date(date + "T00:00:00").getDate()}
 			{@const entryCount = entriesByDate[date] || 0}
 			{@const hasEntries = entryCount > 0}
 			{@const isPeriodDay = periodDates.has(date)}
+			{@const mood = moodByDate[date]}
 			<div
 				class={cn(
-					'flex flex-col rounded-md aspect-square overflow-hidden text-xs',
-					hasEntries ? 'font-semibold' : 'text-charcoal-400'
+					"relative flex flex-col rounded-md aspect-square overflow-hidden text-xs cursor-pointer hover:opacity-80 transition-opacity",
+					hasEntries ? "font-semibold" : "text-charcoal-400",
 				)}
-				title={hasEntries ? `${entryCount} entries${isPeriodDay ? ' (period)' : ''}` : isPeriodDay ? 'Period day' : undefined}
+				title={hasEntries
+					? `${entryCount} entries${isPeriodDay ? " (period)" : ""}`
+					: isPeriodDay
+						? "Period day"
+						: undefined}
+				role="button"
+				tabindex="0"
+				onclick={() => handleDayClick(date)}
+				onkeydown={(e) =>
+					(e.key === "Enter" || e.key === " ") &&
+					handleDayClick(date)}
 			>
-				<div class={cn(
-					'flex flex-1 justify-center items-center',
-					getDayColor(date)
-				)}>
+				<div
+					class={cn(
+						"flex flex-1 justify-center items-center",
+						getDayColor(date),
+					)}
+				>
 					{dayNum}
 				</div>
+				{#if mood}
+					<div
+						class="top-0.5 right-0.5 absolute text-[10px] leading-none"
+					>
+						{moodEmojis[mood]}
+					</div>
+				{/if}
 				{#if isPeriodDay}
 					<div class="bg-pink-400 w-full h-1.5 shrink-0"></div>
 				{/if}
@@ -69,7 +111,9 @@
 	</div>
 
 	<!-- Legend -->
-	<div class="flex flex-wrap justify-center items-center gap-3 mt-4 text-charcoal-400 text-xs">
+	<div
+		class="flex flex-wrap justify-center items-center gap-3 mt-4 text-charcoal-400 text-xs"
+	>
 		<div class="flex items-center gap-1">
 			<div class="bg-cream-200 rounded w-3 h-3"></div>
 			<span>None</span>
@@ -97,4 +141,3 @@
 		{/if}
 	</div>
 </section>
-

@@ -44,7 +44,8 @@ export const zhHK: Translations = {
 		good: '幾好',
 		okay: '一般',
 		bad: '唔舒服',
-		selectMood: '你今日感覺點呀？'
+		selectMood: '你今日感覺點呀？',
+		selectMoodPast: '你嗰日感覺點呀？'
 	},
 
 	ailments: {

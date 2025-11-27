@@ -1,28 +1,34 @@
 <script lang="ts">
-	import { X, Clock } from 'lucide-svelte';
+	import { X, Clock, Trash2 } from 'lucide-svelte';
 	import Icon from '@iconify/svelte';
 	import { i18n } from '$lib/i18n';
 	import { getCurrentTime } from '$lib/utils/date';
 	import { healthStore } from '$lib/stores/health.svelte';
 	import TriggerSelector from './TriggerSelector.svelte';
 	import SeveritySlider from './SeveritySlider.svelte';
-	import type { AilmentType, Severity } from '$lib/types';
+	import type { AilmentType, Severity, HealthEntry } from '$lib/types';
 
 	interface Props {
 		ailment: AilmentType;
 		date: string;
+		existingEntry?: HealthEntry; // For editing existing entries
 		onClose: () => void;
 		onSaved: () => void;
+		onDelete?: (id: string) => void; // For deleting from edit mode
 	}
 
-	let { ailment, date, onClose, onSaved }: Props = $props();
+	let { ailment, date, existingEntry, onClose, onSaved, onDelete }: Props = $props();
 
-	// Form state
-	let severity = $state<Severity>(2);
-	let selectedTriggerIds = $state<string[]>([]);
-	let time = $state(getCurrentTime());
-	let notes = $state('');
+	// Check if we're editing
+	const isEditing = $derived(!!existingEntry);
+
+	// Form state - initialize from existing entry if editing
+	let severity = $state<Severity>(existingEntry?.severity ?? 2);
+	let selectedTriggerIds = $state<string[]>(existingEntry?.triggerIds ? [...existingEntry.triggerIds] : []);
+	let time = $state(existingEntry?.time ?? getCurrentTime());
+	let notes = $state(existingEntry?.notes ?? '');
 	let isSaving = $state(false);
+	let showDeleteConfirm = $state(false);
 
 	// Calculate trigger frequency for this specific ailment
 	const sortedTriggers = $derived(() => {
@@ -58,20 +64,37 @@
 		isSaving = true;
 
 		try {
-			await healthStore.addEntry({
-				date,
-				time,
-				ailmentTypeId: ailment.id,
-				severity,
-				triggerIds: selectedTriggerIds,
-				notes
-			});
+			if (isEditing && existingEntry) {
+				// Update existing entry
+				await healthStore.updateEntry(existingEntry.id, {
+					time,
+					severity,
+					triggerIds: selectedTriggerIds,
+					notes
+				});
+			} else {
+				// Add new entry
+				await healthStore.addEntry({
+					date,
+					time,
+					ailmentTypeId: ailment.id,
+					severity,
+					triggerIds: selectedTriggerIds,
+					notes
+				});
+			}
 			onSaved();
 		} catch (error) {
 			console.error('Failed to save entry:', error);
 			alert(i18n.t.errors.saveFailed + ': ' + (error instanceof Error ? error.message : String(error)));
 		} finally {
 			isSaving = false;
+		}
+	}
+
+	function handleDelete() {
+		if (existingEntry && onDelete) {
+			onDelete(existingEntry.id);
 		}
 	}
 </script>
@@ -100,21 +123,33 @@
 				</span>
 				<div>
 					<h2 class="font-semibold text-charcoal-600">
-						{i18n.t.log.title}
+						{isEditing ? i18n.t.common.edit : i18n.t.log.title}
 					</h2>
 					<p class="text-charcoal-400 text-sm">
 						{i18n.localizedName(ailment)}
 					</p>
 				</div>
 			</div>
-			<button
-				type="button"
-				onclick={onClose}
-				class="hover:bg-cream-200 p-2 rounded-lg transition-colors"
-				aria-label="Close"
-			>
-				<X class="w-5 h-5 text-charcoal-500" />
-			</button>
+			<div class="flex items-center gap-1">
+				{#if isEditing && onDelete}
+					<button
+						type="button"
+						onclick={() => showDeleteConfirm = true}
+						class="hover:bg-coral-50 p-2 rounded-lg text-charcoal-400 hover:text-coral-500 transition-colors"
+						aria-label="Delete"
+					>
+						<Trash2 class="w-5 h-5" />
+					</button>
+				{/if}
+				<button
+					type="button"
+					onclick={onClose}
+					class="hover:bg-cream-200 p-2 rounded-lg transition-colors"
+					aria-label="Close"
+				>
+					<X class="w-5 h-5 text-charcoal-500" />
+				</button>
+			</div>
 		</div>
 
 		<!-- Content -->
@@ -159,16 +194,54 @@
 		</div>
 
 		<!-- Footer -->
-		<div class="flex-shrink-0 bg-white p-4 pb-20 border-charcoal-100 border-t">
+		<div class="bg-white p-4 pb-20 border-charcoal-100 border-t shrink-0">
 			<button
 				type="button"
 				onclick={handleSave}
 				disabled={isSaving}
 				class="disabled:opacity-50 w-full btn-primary"
 			>
-				{isSaving ? i18n.t.common.loading : i18n.t.log.saveEntry}
+				{isSaving ? i18n.t.common.loading : (isEditing ? i18n.t.common.save : i18n.t.log.saveEntry)}
 			</button>
 		</div>
 	</div>
 </div>
+
+<!-- Delete Confirmation -->
+{#if showDeleteConfirm}
+	<div
+		class="z-60 fixed inset-0 flex justify-center items-center bg-black/50 p-4"
+		onclick={() => showDeleteConfirm = false}
+		onkeydown={(e) => e.key === 'Escape' && (showDeleteConfirm = false)}
+		role="button"
+		tabindex="-1"
+	>
+		<div
+			class="bg-white shadow-xl p-6 rounded-2xl w-full max-w-sm animate-slide-up"
+			onclick={(e) => e.stopPropagation()}
+			onkeydown={() => {}}
+			role="dialog"
+			tabindex="-1"
+		>
+			<h3 class="mb-2 font-semibold text-charcoal-600 text-lg">{i18n.t.settings.deleteConfirm}</h3>
+			<p class="mb-6 text-charcoal-500 text-sm">{i18n.t.settings.deleteWarning}</p>
+			<div class="flex gap-3">
+				<button
+					type="button"
+					onclick={() => showDeleteConfirm = false}
+					class="flex-1 btn-ghost"
+				>
+					{i18n.t.common.cancel}
+				</button>
+				<button
+					type="button"
+					onclick={handleDelete}
+					class="flex-1 bg-coral-500 hover:bg-coral-600 text-white btn-primary"
+				>
+					{i18n.t.common.delete}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
 

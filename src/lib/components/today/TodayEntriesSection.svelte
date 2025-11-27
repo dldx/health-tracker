@@ -5,10 +5,11 @@
 
 	interface Props {
 		entries: HealthEntryWithDetails[];
+		onEdit: (entry: HealthEntryWithDetails) => void;
 		onDelete: (id: string) => Promise<void>;
 	}
 
-	let { entries, onDelete }: Props = $props();
+	let { entries, onEdit, onDelete }: Props = $props();
 </script>
 
 <section>
@@ -27,6 +28,7 @@
 				<div class="stagger-{Math.min(index + 1, 5)}">
 					<HealthEntryCard
 						{entry}
+						{onEdit}
 						{onDelete}
 					/>
 				</div>

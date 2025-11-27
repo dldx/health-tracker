@@ -41,7 +41,8 @@ export const en = {
 		good: 'Good',
 		okay: 'Okay',
 		bad: 'Bad',
-		selectMood: 'How are you feeling today?'
+		selectMood: 'How are you feeling today?',
+		selectMoodPast: 'How were you feeling?'
 	},
 
 	ailments: {

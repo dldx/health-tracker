@@ -467,8 +467,17 @@ class HealthStore {
 		updates: Partial<Omit<HealthEntry, 'id' | 'createdAt' | 'updatedAt'>>
 	): Promise<void> {
 		const updatedAt = new Date();
-		await db.healthEntries.update(id, { ...updates, updatedAt });
-		this.entries = this.entries.map((e) => (e.id === id ? { ...e, ...updates, updatedAt } : e));
+		
+		// Create a plain object for updates to avoid Svelte 5 proxy issues with IndexedDB
+		const plainUpdates: typeof updates = { ...updates };
+		
+		// Explicitly clone array properties if they exist in updates
+		if (plainUpdates.triggerIds) {
+			plainUpdates.triggerIds = [...plainUpdates.triggerIds];
+		}
+
+		await db.healthEntries.update(id, { ...plainUpdates, updatedAt });
+		this.entries = this.entries.map((e) => (e.id === id ? { ...e, ...plainUpdates, updatedAt } : e));
 	}
 
 	/**

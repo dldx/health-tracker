@@ -1,14 +1,16 @@
 <script lang="ts">
 	import { i18n } from '$lib/i18n';
 	import { cn } from '$lib/utils/cn';
+	import { isToday, getTodayISO } from '$lib/utils/date';
 	import type { MoodLevel } from '$lib/types';
 
 	interface Props {
 		selected?: MoodLevel;
+		date?: string;
 		onSelect: (mood: MoodLevel) => void;
 	}
 
-	let { selected, onSelect }: Props = $props();
+	let { selected, date = getTodayISO(), onSelect }: Props = $props();
 
 	const moods: { level: MoodLevel; emoji: string; colorClass: string }[] = [
 		{ level: 'good', emoji: '😊', colorClass: 'bg-jade-100 border-jade-400 text-jade-700' },
@@ -18,7 +20,9 @@
 </script>
 
 <div class="card p-4">
-	<p class="text-sm text-charcoal-500 mb-3">{i18n.t.mood.selectMood}</p>
+	<p class="text-sm text-charcoal-500 mb-3">
+		{isToday(date) ? i18n.t.mood.selectMood : i18n.t.mood.selectMoodPast}
+	</p>
 	<div class="flex gap-3 justify-center">
 		{#each moods as mood}
 			<button
