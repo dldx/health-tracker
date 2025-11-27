@@ -1,11 +1,16 @@
 <script lang="ts">
 	import { i18n } from '$lib/i18n';
 	import { healthStore } from '$lib/stores/health.svelte';
-	import { Activity, ShieldCheck, Sparkles, Calendar, Search, BarChart3, ChevronRight, ChevronLeft, Settings2 } from 'lucide-svelte';
+	import type { Language } from '$lib/types';
+	import { Activity, ShieldCheck, Sparkles, Calendar, Search, BarChart3, ChevronRight, ChevronLeft, Settings2, Globe } from 'lucide-svelte';
 
 	let currentStep = $state(0);
 	let nameInput = $state('');
 	let direction = $state<'forward' | 'backward'>('forward');
+
+	async function setLanguage(lang: Language) {
+		await healthStore.setLanguage(lang);
+	}
 
 	// Skip personalization step if name is already set (e.g., from URL params)
 	const hasNameFromUrl = $derived(!!healthStore.customName);
@@ -74,9 +79,27 @@
 							<h2 class="mb-3 font-semibold text-charcoal-600 text-xl">
 								{i18n.t.onboarding.welcome.heading}
 							</h2>
-							<p class="text-charcoal-500">
+							<p class="mb-6 px-4 text-charcoal-500">
 								{i18n.t.onboarding.welcome.description}
 							</p>
+
+							<!-- Language selector -->
+							<div class="flex items-center gap-2 bg-white/90 shadow-sm p-1 border border-jade-200 rounded-full">
+								<button
+									type="button"
+									onclick={() => setLanguage('en')}
+									class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors {healthStore.language === 'en' ? 'bg-jade-400 text-white' : 'text-charcoal-500 hover:bg-jade-50'}"
+								>
+									🇬🇧 English
+								</button>
+								<button
+									type="button"
+									onclick={() => setLanguage('zh-HK')}
+									class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors {healthStore.language === 'zh-HK' ? 'bg-jade-400 text-white' : 'text-charcoal-500 hover:bg-jade-50'}"
+								>
+									🇭🇰 廣東話
+								</button>
+							</div>
 						</div>
 
 					{:else if currentStep === 1}

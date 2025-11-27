@@ -176,8 +176,8 @@
 		}
 	}
 
-	function setLanguage(lang: Language) {
-		i18n.setLocale(lang);
+	async function setLanguage(lang: Language) {
+		await healthStore.setLanguage(lang);
 	}
 </script>
 

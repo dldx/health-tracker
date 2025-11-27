@@ -21,11 +21,13 @@ import type {
 	TileConfig,
 	TileId,
 	StatsTileConfig,
-	StatsTileId
+	StatsTileId,
+	Language
 } from '$lib/types';
 import { DEFAULT_TILE_ORDER, DEFAULT_STATS_TILE_ORDER } from '$lib/types';
 import { getTodayISO, addDays } from '$lib/utils/date';
 import { generateUUID } from '$lib/utils/uuid';
+import { i18n } from '$lib/i18n';
 
 /**
  * Health Store using Svelte 5 runes
@@ -40,6 +42,7 @@ class HealthStore {
 	periodEntries = $state<PeriodEntry[]>([]);
 	customSymptoms = $state<CustomPeriodSymptom[]>([]);
 	customName = $state<string | undefined>(undefined);
+	language = $state<Language>('en');
 	tileConfig = $state<TileConfig[]>([...DEFAULT_TILE_ORDER]);
 	statsTileConfig = $state<StatsTileConfig[]>([...DEFAULT_STATS_TILE_ORDER]);
 	hasCompletedOnboarding = $state<boolean>(false);
@@ -193,9 +196,13 @@ class HealthStore {
 		this.periodEntries = periods;
 		this.customSymptoms = symptoms;
 		this.customName = settings?.customName;
+		this.language = settings?.language ?? 'en';
 		this.tileConfig = settings?.tileConfig ?? [...DEFAULT_TILE_ORDER];
 		this.statsTileConfig = settings?.statsTileConfig ?? [...DEFAULT_STATS_TILE_ORDER];
 		this.hasCompletedOnboarding = settings?.hasCompletedOnboarding ?? false;
+
+		// Sync language to i18n store
+		i18n.setLocale(this.language);
 	}
 
 	/**
@@ -265,9 +272,34 @@ class HealthStore {
 		} else {
 			const newSettings: AppSettings = {
 				id: 'settings',
-				language: 'en',
+				language: this.language,
 				theme: 'light',
 				hasCompletedOnboarding: true,
+				createdAt: now,
+				updatedAt: now
+			};
+			await db.settings.put(newSettings);
+		}
+	}
+
+	/**
+	 * Set language and persist to database
+	 * 設定語言並儲存到資料庫
+	 */
+	async setLanguage(lang: Language): Promise<void> {
+		this.language = lang;
+		i18n.setLocale(lang);
+
+		const now = new Date();
+		const settings = await db.settings.get('settings');
+
+		if (settings) {
+			await db.settings.update('settings', { language: lang, updatedAt: now });
+		} else {
+			const newSettings: AppSettings = {
+				id: 'settings',
+				language: lang,
+				theme: 'light',
 				createdAt: now,
 				updatedAt: now
 			};
