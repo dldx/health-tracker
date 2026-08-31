@@ -4,11 +4,22 @@
  */
 
 /**
- * Get today's date as ISO string (YYYY-MM-DD)
- * 獲取今日日期（ISO 格式）
+ * Format a Date as YYYY-MM-DD using local timezone components
+ * 用本地時區嘅日期組件格式化成 YYYY-MM-DD
+ */
+function toLocalISODate(date: Date): string {
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, '0');
+	const day = String(date.getDate()).padStart(2, '0');
+	return `${year}-${month}-${day}`;
+}
+
+/**
+ * Get today's date as ISO string (YYYY-MM-DD) in local timezone
+ * 獲取今日日期（本地時區，ISO 格式）
  */
 export function getTodayISO(): string {
-	return new Date().toISOString().split('T')[0];
+	return toLocalISODate(new Date());
 }
 
 /**
@@ -108,7 +119,7 @@ export function isToday(dateStr: string): boolean {
 export function addDays(dateStr: string, days: number): string {
 	const date = new Date(dateStr + 'T00:00:00');
 	date.setDate(date.getDate() + days);
-	return date.toISOString().split('T')[0];
+	return toLocalISODate(date);
 }
 
 /**
@@ -119,8 +130,8 @@ export function getMonthRange(year: number, month: number): { start: string; end
 	const start = new Date(year, month, 1);
 	const end = new Date(year, month + 1, 0);
 	return {
-		start: start.toISOString().split('T')[0],
-		end: end.toISOString().split('T')[0]
+		start: toLocalISODate(start),
+		end: toLocalISODate(end)
 	};
 }
 
@@ -134,7 +145,7 @@ export function getDatesInMonth(year: number, month: number): string[] {
 
 	for (let day = 1; day <= lastDay; day++) {
 		const date = new Date(year, month, day);
-		dates.push(date.toISOString().split('T')[0]);
+		dates.push(toLocalISODate(date));
 	}
 
 	return dates;
